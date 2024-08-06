@@ -48,8 +48,77 @@ if(NOT CMAKE_Fortran_COMPILER_ID MATCHES "^(Intel|GNU|IntelLLVM)$")
     WARNING "Compiler not officially supported: ${CMAKE_Fortran_COMPILER_ID}")
 endif()
 
-# Append directory that contains CMake Modules for building FMS
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+################################################################################
+# Fortran
+################################################################################
+
+if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
+  # Precision-based Fortran compiler flags
+  set(r8_flags "-fdefault-real-8 -fdefault-double-8") # Fortran flags for 64BIT precision
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fcray-pointer -fconvert=big-endian -ffree-line-length-none -fno-range-check -fbacktrace")
+  set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -funroll-all-loops -finline-functions")
+  set(CMAKE_Fortran_FLAGS_DEBUG "-O0 -g -fcheck=bounds -ffpe-trap=invalid,zero,overflow,underflow" )
+  set(CMAKE_Fortran_LINK_FLAGS "" )
+
+elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
+  # Precision-based Fortran compiler flags
+  set(r4_flags "-real-size 32") # Fortran flags for 32BIT precision
+  set(r8_flags "-real-size 64") # Fortran flags for 64BIT precision
+  set(r8_flags "${r8_flags} -no-prec-div -no-prec-sqrt")
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fpp -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -align array64byte -nowarn -sox -traceback")
+  set(CMAKE_Fortran_FLAGS_RELEASE "-O2 -debug minimal -fp-model source -nowarn -qoverride-limits -qno-opt-dynamic-align -qopt-prefetch=3")
+  set(CMAKE_Fortran_FLAGS_DEBUG "-g -O0 -check -check noarg_temp_created -check nopointer -warn -warn noerrors -fpe0 -ftrapuv")
+  set(CMAKE_Fortran_LINK_FLAGS "")
+
+elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
+  # Precision-based Fortran compiler flags
+  set(r4_flags "-real-size 32") # Fortran flags for 32BIT precision
+  set(r8_flags "-real-size 64") # Fortran flags for 64BIT precision
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fpp -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -align array64byte -nowarn -traceback")
+  set(CMAKE_Fortran_FLAGS_RELEASE "-O2 -debug minimal -nowarn -qoverride-limits -qno-opt-dynamic-align")
+  set(CMAKE_Fortran_FLAGS_DEBUG "-g -O0 -check -check noarg_temp_created -check nopointer -warn -warn noerrors -fpe0 -ftrapuv")
+  set(CMAKE_Fortran_LINK_FLAGS "")
+
+else()
+  message(WARNING "Fortran compiler with ID ${CMAKE_Fortran_COMPILER_ID} will be used with CMake default options")
+endif()
+
+################################################################################
+# C
+################################################################################
+
+if(CMAKE_C_COMPILER_ID MATCHES "GNU")
+
+  # GNU C
+  set(CMAKE_C_FLAGS_RELEASE "-O3")
+  set(CMAKE_C_FLAGS_DEBUG "-O0 -g")
+  set(CMAKE_C_LINK_FLAGS "")
+
+elseif(CMAKE_C_COMPILER_ID STREQUAL "Intel")
+  # Intel C
+  set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -sox -traceback")
+  set( CMAKE_C_FLAGS_RELEASE "-qno-opt-dynamic-align -O2 -debug minimal -fp-model source")
+  set( CMAKE_C_FLAGS_DEBUG "-O0 -g -ftrapuv")
+  set( CMAKE_C_LINK_FLAGS "")
+
+elseif(CMAKE_C_COMPILER_ID STREQUAL "IntelLLVM")
+  # Intel LLVM based C
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -traceback")
+  set(CMAKE_C_FLAGS_RELEASE "-qno-opt-dynamic-align -O2 -debug minimal")
+  set(CMAKE_C_FLAGS_DEBUG "-O0 -g -ftrapuv")
+  set(CMAKE_C_LINK_FLAGS "")
+
+elseif(CMAKE_C_COMPILER_ID MATCHES "Clang")
+  # Clang C
+  set(CMAKE_C_FLAGS_RELEASE     "-O3" )
+  set(CMAKE_C_FLAGS_DEBUG       "-O0 -g" )
+  set(CMAKE_C_LINK_FLAGS        "" )
+
+else()
+  message(WARNING "C compiler with ID ${CMAKE_C_COMPILER_ID} will be used with CMake default options")
+endif()
+
+################################################################################
 
 # Build options
 option(OPENMP      "Build FMS with OpenMP support"        OFF)
@@ -284,9 +353,6 @@ endif()
 if(APPLE)
   list(APPEND fms_defs __APPLE__)
 endif()
-
-# Obtain compiler-specific flags
-include(fms_compiler_flags)
 
 foreach(kind ${kinds})
 
