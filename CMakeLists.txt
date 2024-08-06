@@ -23,9 +23,10 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
 # Define the CMake project
 project(FMS
-  VERSION 2025.01.0
-  DESCRIPTION  "GFDL FMS Library"
-  HOMEPAGE_URL "https://www.gfdl.noaa.gov/fms"
+  VERSION 2020.03.001
+  # Forked in 2020 at: https://github.com/ACCESS-NRI/FMS/commit/e8940fe90d68c3dc7c0d6bf1b8f552a577251754
+  DESCRIPTION "ACCESS-NRI fork of GFDL FMS Library"
+  HOMEPAGE_URL "https://github.com/ACCESS-NRI/FMS/"
   LANGUAGES C Fortran)
 
 include(GNUInstallDirs)
@@ -56,31 +57,37 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 ################################################################################
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
+
   # Precision-based Fortran compiler flags
   set(r8_flags "-fdefault-real-8 -fdefault-double-8") # Fortran flags for 64BIT precision
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fcray-pointer -fconvert=big-endian -ffree-line-length-none -fno-range-check -fbacktrace")
-  set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -funroll-all-loops -finline-functions")
-  set(CMAKE_Fortran_FLAGS_DEBUG "-O0 -g -fcheck=bounds -ffpe-trap=invalid,zero,overflow,underflow" )
-  set(CMAKE_Fortran_LINK_FLAGS "" )
+
+  # Copied from MOM5/bin/mkmf.template.nci.gfortran
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fcray-pointer -fdefault-real-8 -ffree-line-length-none -fno-range-check -Waliasing -Wampersand -Warray-bounds -Wcharacter-truncation -Wconversion -Wline-truncation -Wintrinsics-std -Wsurprising -Wno-tabs -Wunderflow -Wunused-parameter -Wintrinsic-shadow -Wno-align-commons")
+  set(CMAKE_Fortran_FLAGS_RELEASE "-O2")
+  set(CMAKE_Fortran_FLAGS_DEBUG "-O0 -g -W -fbounds-check")
 
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
+
   # Precision-based Fortran compiler flags
   set(r4_flags "-real-size 32") # Fortran flags for 32BIT precision
   set(r8_flags "-real-size 64") # Fortran flags for 64BIT precision
   set(r8_flags "${r8_flags} -no-prec-div -no-prec-sqrt")
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fpp -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -align array64byte -nowarn -sox -traceback")
-  set(CMAKE_Fortran_FLAGS_RELEASE "-O2 -debug minimal -fp-model source -nowarn -qoverride-limits -qno-opt-dynamic-align -qopt-prefetch=3")
-  set(CMAKE_Fortran_FLAGS_DEBUG "-g -O0 -check -check noarg_temp_created -check nopointer -warn -warn noerrors -fpe0 -ftrapuv")
-  set(CMAKE_Fortran_LINK_FLAGS "")
+
+  # Copied from MOM5/bin/mkmf.template.nci
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-alias -safe-cray-ptr -fpe0 -ftz -assume byterecl -i4 -r8 -traceback -nowarn -check noarg_temp_created -assume nobuffered_io -convert big_endian -grecord-gcc-switches -align all")
+  set(CMAKE_Fortran_FLAGS_RELEASE "-g3 -O2 -xCORE-AVX2 -debug all -check none")
+  set(CMAKE_Fortran_FLAGS_DEBUG "-g3 -O0 -debug all -check -check noarg_temp_created -check nopointer -warn -warn noerrors -ftrapuv")
 
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
+
   # Precision-based Fortran compiler flags
   set(r4_flags "-real-size 32") # Fortran flags for 32BIT precision
   set(r8_flags "-real-size 64") # Fortran flags for 64BIT precision
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fpp -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -align array64byte -nowarn -traceback")
-  set(CMAKE_Fortran_FLAGS_RELEASE "-O2 -debug minimal -nowarn -qoverride-limits -qno-opt-dynamic-align")
-  set(CMAKE_Fortran_FLAGS_DEBUG "-g -O0 -check -check noarg_temp_created -check nopointer -warn -warn noerrors -fpe0 -ftrapuv")
-  set(CMAKE_Fortran_LINK_FLAGS "")
+
+  # Copied from MOM5/bin/mkmf.template.nci
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-alias -safe-cray-ptr -fpe0 -ftz -assume byterecl -i4 -r8 -traceback -nowarn -check noarg_temp_created -assume nobuffered_io -convert big_endian -grecord-gcc-switches -align all")
+  set(CMAKE_Fortran_FLAGS_RELEASE "-g3 -O2 -xCORE-AVX2 -debug all -check none")
+  set(CMAKE_Fortran_FLAGS_DEBUG "-g3 -O0 -debug all -check -check noarg_temp_created -check nopointer -warn -warn noerrors -ftrapuv")
 
 else()
   message(WARNING "Fortran compiler with ID ${CMAKE_Fortran_COMPILER_ID} will be used with CMake default options")
@@ -92,30 +99,31 @@ endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "GNU")
 
-  # GNU C
-  set(CMAKE_C_FLAGS_RELEASE "-O3")
-  set(CMAKE_C_FLAGS_DEBUG "-O0 -g")
-  set(CMAKE_C_LINK_FLAGS "")
+  # Copied from MOM5/bin/mkmf.template.nci.gfortran
+  set(CMAKE_C_FLAGS         "${CMAKE_C_FLAGS}")
+  set(CMAKE_C_FLAGS_DEBUG   "-O0 -g")
+  set(CMAKE_C_FLAGS_RELEASE "-O2")
 
 elseif(CMAKE_C_COMPILER_ID STREQUAL "Intel")
-  # Intel C
-  set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -sox -traceback")
-  set( CMAKE_C_FLAGS_RELEASE "-qno-opt-dynamic-align -O2 -debug minimal -fp-model source")
-  set( CMAKE_C_FLAGS_DEBUG "-O0 -g -ftrapuv")
-  set( CMAKE_C_LINK_FLAGS "")
+
+  # Copied from MOM5/bin/mkmf.template.nci
+  set(CMAKE_C_FLAGS         "${CMAKE_C_FLAGS}")
+  set(CMAKE_C_FLAGS_DEBUG   "-O0 -g -ftrapuv -traceback")
+  set(CMAKE_C_FLAGS_RELEASE "-O2 -debug minimal -xCORE-AVX2")
 
 elseif(CMAKE_C_COMPILER_ID STREQUAL "IntelLLVM")
-  # Intel LLVM based C
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -traceback")
-  set(CMAKE_C_FLAGS_RELEASE "-qno-opt-dynamic-align -O2 -debug minimal")
-  set(CMAKE_C_FLAGS_DEBUG "-O0 -g -ftrapuv")
-  set(CMAKE_C_LINK_FLAGS "")
+
+  # Copied from MOM5/bin/mkmf.template.nci
+  set(CMAKE_C_FLAGS         "${CMAKE_C_FLAGS}")
+  set(CMAKE_C_FLAGS_DEBUG   "-O0 -g -ftrapuv -traceback")
+  set(CMAKE_C_FLAGS_RELEASE "-O2 -debug minimal -xCORE-AVX2")
 
 elseif(CMAKE_C_COMPILER_ID MATCHES "Clang")
-  # Clang C
-  set(CMAKE_C_FLAGS_RELEASE     "-O3" )
-  set(CMAKE_C_FLAGS_DEBUG       "-O0 -g" )
-  set(CMAKE_C_LINK_FLAGS        "" )
+
+  # Copied from MOM5/bin/mkmf.template.nci.gfortran
+  set(CMAKE_C_FLAGS         "${CMAKE_C_FLAGS}")
+  set(CMAKE_C_FLAGS_DEBUG   "-O0 -g")
+  set(CMAKE_C_FLAGS_RELEASE "-O2")
 
 else()
   message(WARNING "C compiler with ID ${CMAKE_C_COMPILER_ID} will be used with CMake default options")
@@ -125,19 +133,17 @@ endif()
 
 # Build options
 option(OPENMP      "Build FMS with OpenMP support"        OFF)
-option(32BIT       "Build 32-bit (r4) FMS library"         ON)
-option(64BIT       "Build 64-bit (r8) FMS library"        OFF)
+option(32BIT       "Build 32-bit (r4) FMS library"        OFF)
+# Refer to CMAKE_Fortran_FLAGS above, it contains -r8
+option(64BIT       "Build 64-bit (r8) FMS library"        ON)
 option(FPIC        "Build with position independent code" OFF)
 option(SHARED_LIBS "Build shared/dynamic libraries"       OFF)
 
 # Options for compiler definitions
 option(INTERNAL_FILE_NML     "Enable compiler definition -DINTERNAL_FILE_NML"      ON)
-option(ENABLE_QUAD_PRECISION "Enable compiler definition -DENABLE_QUAD_PRECISION"  ON)
 option(PORTABLE_KINDS        "Enable compiler definition -DPORTABLE_KINDS"        OFF)
 option(GFS_PHYS              "Enable compiler definition -DGFS_PHYS"              OFF)
 option(LARGEFILE             "Enable compiler definition -Duse_LARGEFILE"         OFF)
-option(WITH_YAML             "Enable compiler definition -Duse_yaml"              OFF)
-option(USE_DEPRECATED_IO     "Enable compiler definition -Duse_deprecated_io (compile with fms_io/mpp_io)"   OFF)
 
 if(32BIT)
   list(APPEND kinds "r4")
@@ -160,11 +166,6 @@ if (OPENMP)
   find_package(OpenMP REQUIRED COMPONENTS C Fortran)
 endif()
 
-if (WITH_YAML)
-  find_package(libyaml REQUIRED)
-  include_directories(${LIBYAML_INCLUDE_DIR})
-endif ()
-
 # Enables position independent code (i.e., -fPIC)
 if (FPIC)
   set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -172,45 +173,24 @@ endif ()
 
 # Collect FMS Fortran source files
 list(APPEND fms_fortran_src_files
-  affinity/fms_affinity.F90
   amip_interp/amip_interp.F90
   astronomy/astronomy.F90
   axis_utils/axis_utils.F90
-  axis_utils/axis_utils2.F90
   block_control/block_control.F90
   column_diagnostics/column_diagnostics.F90
   constants/constants.F90
-  constants/fmsconstants.F90
-  constants4/constantsr4.F90
-  constants4/fmsconstantsr4.F90
   coupler/atmos_ocean_fluxes.F90
-  coupler/gex.F90
   coupler/coupler_types.F90
   coupler/ensemble_manager.F90
-  data_override/get_grid_version.F90
   data_override/data_override.F90
-  diag_integral/diag_integral.F90
   diag_manager/diag_axis.F90
   diag_manager/diag_data.F90
   diag_manager/diag_grid.F90
   diag_manager/diag_manager.F90
+  diag_manager/diag_manifest.F90
   diag_manager/diag_output.F90
   diag_manager/diag_table.F90
   diag_manager/diag_util.F90
-  diag_manager/fms_diag_time_utils.F90
-  diag_manager/fms_diag_object.F90
-  diag_manager/fms_diag_yaml.F90
-  diag_manager/fms_diag_file_object.F90
-  diag_manager/fms_diag_field_object.F90
-  diag_manager/fms_diag_axis_object.F90
-  diag_manager/fms_diag_output_buffer.F90
-  diag_manager/fms_diag_input_buffer.F90
-  diag_manager/fms_diag_time_reduction.F90
-  diag_manager/fms_diag_outfield.F90
-  diag_manager/fms_diag_elem_weight_procs.F90
-  diag_manager/fms_diag_fieldbuff_update.F90
-  diag_manager/fms_diag_bbox.F90
-  diag_manager/fms_diag_reduction_methods.F90
   drifters/cloud_interpolator.F90
   drifters/drifters.F90
   drifters/drifters_comm.F90
@@ -222,15 +202,10 @@ list(APPEND fms_fortran_src_files
   exchange/xgrid.F90
   field_manager/field_manager.F90
   field_manager/fm_util.F90
-  field_manager/fm_yaml.F90
+  fft/fft99.F90
+  fft/fft.F90
   fms/fms_io.F90
   fms/fms.F90
-  fms2_io/blackboxio.F90
-  fms2_io/fms_io_utils.F90
-  fms2_io/fms_netcdf_domain_io.F90
-  fms2_io/fms_netcdf_unstructured_domain_io.F90
-  fms2_io/fms2_io.F90
-  fms2_io/netcdf_io.F90
   horiz_interp/horiz_interp_bicubic.F90
   horiz_interp/horiz_interp_bilinear.F90
   horiz_interp/horiz_interp_conserve.F90
@@ -239,11 +214,9 @@ list(APPEND fms_fortran_src_files
   horiz_interp/horiz_interp.F90
   interpolator/interpolator.F90
   memutils/memutils.F90
-  monin_obukhov/monin_obukhov_inter.F90
-  monin_obukhov/monin_obukhov.F90
-  grid_utils/gradient.F90
-  mosaic2/grid2.F90
-  mosaic2/mosaic2.F90
+  mosaic/gradient.F90
+  mosaic/grid.F90
+  mosaic/mosaic.F90
   mpp/mpp.F90
   mpp/mpp_data.F90
   mpp/mpp_domains.F90
@@ -251,17 +224,20 @@ list(APPEND fms_fortran_src_files
   mpp/mpp_io.F90
   mpp/mpp_memutils.F90
   mpp/mpp_parameter.F90
+  mpp/mpp_pset.F90
   mpp/mpp_utilities.F90
-  parser/yaml_parser.F90
-  parser/fms_yaml_output.F90
+  oda_tools/oda_core_ecda.F90
+  oda_tools/oda_core.F90
+  oda_tools/oda_types.F90
+  oda_tools/write_ocean_data.F90
+  oda_tools/xbt_drop_rate_adjust.f90
   platform/platform.F90
-  random_numbers/mersennetwister.F90
+  random_numbers/MersenneTwister.F90
   random_numbers/random_numbers.F90
   sat_vapor_pres/sat_vapor_pres_k.F90
   sat_vapor_pres/sat_vapor_pres.F90
-  string_utils/fms_string_utils.F90
+  station_data/station_data.F90
   time_interp/time_interp_external.F90
-  time_interp/time_interp_external2.F90
   time_interp/time_interp.F90
   time_manager/get_cal_time.F90
   time_manager/time_manager.F90
@@ -269,21 +245,19 @@ list(APPEND fms_fortran_src_files
   topography/topography.F90
   tracer_manager/tracer_manager.F90
   tridiagonal/tridiagonal.F90
-  libFMS.F90
 )
 
 # Collect FMS C source files
 list(APPEND fms_c_src_files
-  affinity/affinity.c
-  fms/fms_stacksize.c
-  grid_utils/gradient_c2l.c
-  grid_utils/grid_utils.c
-  grid_utils/tree_utils.c
-  horiz_interp/include/horiz_interp_conserve_xgrid.c
-  mpp/mpp_memuse.c
-  parser/yaml_parser_binding.c
-  parser/yaml_output_functions.c
-  string_utils/fms_string_utils_binding.c
+  memutils/memuse.c
+  mosaic/create_xgrid.c
+  mosaic/gradient_c2l.c
+  mosaic/interp.c
+  mosaic/mosaic_util.c
+  mosaic/read_mosaic.c
+  mpp/affinity.c
+  mpp/nsclock.c
+  mpp/threadloc.c
 )
 
 # Collect FMS header files
@@ -295,7 +269,9 @@ list(APPEND fms_header_files
 # Standard FMS compiler definitions
 list(APPEND fms_defs
   use_libMPI
-  use_netCDF)
+  use_netCDF
+  SPMD
+  __IFC)
 
 # check gettid
 include(CheckFunctionExists)
@@ -304,32 +280,8 @@ if(HAVE_GETTID)
   list(APPEND fms_defs HAVE_GETTID)
 endif()
 
-# Additional (optional) compiler definitions
-if(NOT CONSTANTS)
-    set(CONSTANTS GFDL)
-endif()
-if(CONSTANTS STREQUAL "GFS")
-  list(APPEND fms_defs GFS_CONSTANTS)
-elseif(CONSTANTS STREQUAL "GEOS")
-  list(APPEND fms_defs GEOS_CONSTANTS)
-elseif(CONSTANTS STREQUAL "GFDL")
-  list(APPEND fms_defs GFDL_CONSTANTS)
-else()
-  message(FATAL_ERROR "CONSTANTS=${CONSTANTS} option not supported")
-endif()
-
 if(GFS_PHYS)
   list(APPEND fms_defs GFS_PHYS)
-endif()
-
-if(WITH_YAML)
-  list(APPEND fms_defs use_yaml)
-endif()
-
-if(USE_DEPRECATED_IO)
-  message( WARNING "fms_io WILL BE DEPRECATED IN A FUTURE RELEASE. PLEASE UPDATE TO USE FMS2_IO AND REMOVE "
-                   "-DUSE_DEPRECATED_IO=on FROM YOUR OPTIONS")
-  list(APPEND fms_defs use_deprecated_io)
 endif()
 
 if(INTERNAL_FILE_NML)
@@ -368,7 +320,11 @@ foreach(kind ${kinds})
   add_library(${libTgt}_c OBJECT ${fms_c_src_files})
 
   target_include_directories(${libTgt}_c PRIVATE include
-                                                 grid_utils)
+                                                 mosaic
+                                                 drifters
+                                                 fms
+                                                 mpp/include)
+
   target_compile_definitions(${libTgt}_c PRIVATE "${fms_defs}")
 
   target_link_libraries(${libTgt}_c PRIVATE NetCDF::NetCDF_C
@@ -382,32 +338,10 @@ foreach(kind ${kinds})
   add_library(${libTgt}_f OBJECT ${fms_fortran_src_files})
 
   target_include_directories(${libTgt}_f PRIVATE include
+                                                 mosaic
+                                                 drifters
                                                  fms
-                                                 fms/include
-                                                 fms2_io/include
-                                                 string_utils/include
-                                                 mpp/include
-                                                 column_diagnostics/include
-                                                 monin_obukhov/include
-                                                 sat_vapor_pres/include
-                                                 horiz_interp/include
-                                                 diag_integral/include
-                                                 random_numbers/include
-                                                 diag_manager/include
-                                                 constants4
-                                                 topography/include
-                                                 axis_utils/include
-                                                 mosaic2/include
-                                                 constants
-                                                 astronomy/include
-                                                 field_manager/include
-                                                 time_interp/include
-                                                 tracer_manager/include
-                                                 tridiagonal/include
-                                                 interpolator/include
-                                                 coupler/include
-                                                 data_override/include
-                                                 amip_interp/include)
+                                                 mpp/include)
 
   target_compile_definitions(${libTgt}_f PRIVATE "${fms_defs}")
   target_compile_definitions(${libTgt}_f PRIVATE "${${kind}_defs}")
@@ -448,31 +382,7 @@ foreach(kind ${kinds})
 
   target_include_directories(${libTgt} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/fms>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/fms/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/fms2_io/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/column_diagnostics/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/astronomy/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/monin_obukhov/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/sat_vapor_pres/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/field_manager/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/grid_utils>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/horiz_interp/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/mosaic2/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/string_utils/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/mpp/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/diag_manager/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/topography/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/random_numbers/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/diag_integral/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/diag_manager/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tracer_manager/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/interpolator/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/coupler/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/mosaic2/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/data_override/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tridiagonal/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/amip_interp/include>)
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/mpp/include>)
 
   target_include_directories(${libTgt} INTERFACE
     $<BUILD_INTERFACE:${moduleDir}>
