@@ -53,9 +53,6 @@ if(NOT CMAKE_Fortran_COMPILER_ID MATCHES "^(Intel|GNU|IntelLLVM)$")
     WARNING "Compiler not officially supported: ${CMAKE_Fortran_COMPILER_ID}")
 endif()
 
-# TODO: Include FindNetCDF.cmake , there must be a better way to do this!
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
 ################################################################################
 # Fortran
 ################################################################################
@@ -176,7 +173,9 @@ endif()
 
 # Find dependencies
 find_package(MPI REQUIRED COMPONENTS C Fortran)
-find_package(NetCDF REQUIRED COMPONENTS C Fortran)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(NETCDF_C REQUIRED IMPORTED_TARGET "netcdf")
+pkg_check_modules(NETCDF_F REQUIRED IMPORTED_TARGET "netcdf-fortran")
 
 # Check for the OpenMP library and set the required compile flags
 if (OPENMP)
@@ -379,7 +378,7 @@ foreach(kind ${kinds})
 
   target_compile_definitions(${libTgt}_c PRIVATE "${fms_defs}")
 
-  target_link_libraries(${libTgt}_c PRIVATE NetCDF::NetCDF_C
+  target_link_libraries(${libTgt}_c PRIVATE PkgConfig::NETCDF_C
                                             MPI::MPI_C)
 
   if(OpenMP_C_FOUND)
@@ -403,7 +402,7 @@ foreach(kind ${kinds})
   set_target_properties(${libTgt}_f PROPERTIES Fortran_MODULE_DIRECTORY
                                                ${moduleDir})
 
-  target_link_libraries(${libTgt}_f PRIVATE NetCDF::NetCDF_Fortran
+  target_link_libraries(${libTgt}_f PRIVATE PkgConfig::NETCDF_F
                                             MPI::MPI_Fortran)
 
   if(OpenMP_Fortran_FOUND)
@@ -443,8 +442,8 @@ foreach(kind ${kinds})
   target_compile_definitions(${libTgt} PRIVATE "${fms_defs}")
   target_compile_definitions(${libTgt} PRIVATE "${${kind}_defs}")
 
-  target_link_libraries(${libTgt} PUBLIC NetCDF::NetCDF_C
-                                         NetCDF::NetCDF_Fortran
+  target_link_libraries(${libTgt} PUBLIC PkgConfig::NETCDF_C
+                                         PkgConfig::NETCDF_F
                                          MPI::MPI_Fortran)
 
   if(OpenMP_Fortran_FOUND)
