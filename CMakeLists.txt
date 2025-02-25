@@ -117,18 +117,17 @@ elseif(CMAKE_C_COMPILER_ID STREQUAL "Intel")
 
 elseif(CMAKE_C_COMPILER_ID STREQUAL "IntelLLVM")
 
-  # Intel LLVM based C
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -traceback")
-  set(CMAKE_C_FLAGS_RELEASE "-qno-opt-dynamic-align -O2 -debug minimal")
-  set(CMAKE_C_FLAGS_DEBUG "-O0 -g -ftrapuv")
-  set(CMAKE_C_LINK_FLAGS "")
+  # Copied from MOM5/bin/mkmf.template.nci
+  set(CMAKE_C_FLAGS         "${CMAKE_C_FLAGS}")
+  set(CMAKE_C_FLAGS_DEBUG   "-O0 -g -ftrapuv -traceback")
+  set(CMAKE_C_FLAGS_RELEASE "-O2 -debug minimal -xCORE-AVX2")
 
 elseif(CMAKE_C_COMPILER_ID MATCHES "Clang")
 
-  # Clang C
-  set(CMAKE_C_FLAGS_RELEASE     "-O3" )
-  set(CMAKE_C_FLAGS_DEBUG       "-O0 -g" )
-  set(CMAKE_C_LINK_FLAGS        "" )
+  # Copied from MOM5/bin/mkmf.template.nci.gfortran
+  set(CMAKE_C_FLAGS         "${CMAKE_C_FLAGS}")
+  set(CMAKE_C_FLAGS_DEBUG   "-O0 -g")
+  set(CMAKE_C_FLAGS_RELEASE "-O2")
 
 else()
   message(WARNING "C compiler with ID ${CMAKE_C_COMPILER_ID} will be used with CMake default options")
