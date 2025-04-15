@@ -3253,7 +3253,8 @@ else if(ncal == THIRTY_DAY_MONTHS) then
 else if(ncal == JULIAN) then
   valid_calendar_types = 'JULIAN                  '
 else if(ncal == GREGORIAN) then
-  valid_calendar_types = 'GREGORIAN               '
+  ! The GREGORIAN calendar type actually implements PROLEPTIC_GREGORIAN
+  valid_calendar_types = 'PROLEPTIC_GREGORIAN     '
 else if(ncal == NOLEAP) then
   valid_calendar_types = 'NOLEAP                  '
 else
