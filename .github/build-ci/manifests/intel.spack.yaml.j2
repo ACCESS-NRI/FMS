@@ -1,0 +1,11 @@
+spack:
+  specs:
+  - access-fms @git.{{ ref }} ~large_file
+  - access-fms @git.{{ ref }} +large_file
+  packages:
+    all:
+      require:
+      - '%{{ intel_compiler }} target={{ target}}'
+  concretizer:
+    unify: false
+  view: false

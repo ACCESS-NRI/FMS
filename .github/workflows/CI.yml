@@ -1,46 +1,39 @@
-name: CI
-
-on: [push, pull_request]
-
-env:
-  CI: "ON" # We can detect this in the build system and other vendors implement it
-
+name: Build
+on:
+  pull_request:
+  push:
+    branches:
+      - mom5
 jobs:
-  build:
+  pre-ci:
+    name: Pre-CI
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up matrix
+        id: set-matrix
+        # Find all relevant files under .github/build-ci/manifests
+        # then output them as a JSON array (minus the last comma)
+        run: |
+          files=$(find .github/build-ci/manifests/ -iname '*.j2' -printf '"%p",')
+          echo "matrix=[${files%,}]" >> $GITHUB_OUTPUT
+
+  ci:
+    name: CI
+    needs: pre-ci
     strategy:
       fail-fast: false
+      max-parallel: 5
       matrix:
-        os: [ ubuntu-20.04 ] 
-        # gcc_v: [8, 9] # Version of GFortran we want to use.
-        build: [ Release, Debug ]
-    runs-on: ${{ matrix.os }}
-    env:
-      # FC: gfortran-${{ matrix.gcc_v }}
-      # OMPI_FC: gfortran-${{ matrix.gcc_v }}
-      # GCC_V: ${{ matrix.gcc_v }}
-      FC: gfortran
-      OMPI_FC: gfortran
-
-    steps:
-
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get -yqq install csh cmake gfortran libgomp1 openmpi-bin libopenmpi-dev libnetcdf-dev libnetcdff-dev  netcdf-bin
-
-    - name: Determing OS version
-      uses: kenchan0130/actions-system-info@master
-      id: system-info
-
-    - name: Set OS version
-      run: | 
-        echo "Release: ${{ steps.system-info.outputs.release }}"
-        echo "os_version=${{ steps.system-info.outputs.release }}" >> $GITHUB_ENV
-
-    - name: Compile
-      run: |
-        cmake -S . -B build/Debug -D CMAKE_BUILD_TYPE=Debug
-        cd build/Debug && make -j
+        file: ${{ fromJson(needs.pre-ci.outputs.matrix) }}
+    uses: access-nri/build-ci/.github/workflows/ci.yml@v2
+    with:
+      spack-manifest-path: ${{ matrix.file }}
+      allow-ssh-into-spack-install: false  # If true, PR author must ssh into instance to complete job
+      spack-manifest-data-path: .github/build-ci/data/standard.json
+      # spack-packages-ref: main
+      # spack-config-ref: main
+      # spack-ref: releases/v0.22
