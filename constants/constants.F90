@@ -48,7 +48,7 @@ real(kind=r8_kind), public, parameter :: GRAV_8 = 9.80665_r8_kind     !< Acceler
 real,               public, parameter :: RDGAS  = 287.05_r8_kind      !< Gas constant for dry air [J/kg/deg]
 real,               public, parameter :: RVGAS  = 461.50_r8_kind      !< Gas constant for water vapor [J/kg/deg]
 ! Extra:
-real,               public, parameter :: HLV      = 2.501e6_r8_kind             !< Latent heat of evaporation [J/kg] try CICE/UM value for esm1.6
+real,               public            :: HLV      = 2.500e6_r8_kind   !< Latent heat of evaporation [J/kg]
 real,               public, parameter :: HLF      = 3.3358e5_r8_kind  !< Latent heat of fusion [J/kg]
 real,               public, parameter :: con_cliq = 4.1855e+3_r8_kind !< spec heat H2O liq [J/kg/K]
 real,               public, parameter :: con_csol = 2.1060e+3_r8_kind !< spec heat H2O ice [J/kg/K]
@@ -77,7 +77,7 @@ real,         public, parameter :: GRAV   = 9.80_r8_kind             !< Accelera
 real,         public, parameter :: RDGAS  = 287.04_r8_kind           !< Gas constant for dry air [J/kg/deg]
 real,         public, parameter :: RVGAS  = 461.50_r8_kind           !< Gas constant for water vapor [J/kg/deg]
 ! Extra:
-real,         public, parameter :: HLV = 2.500e6_r8_kind             !< Latent heat of evaporation [J/kg] 
+real,         public            :: HLV = 2.500e6_r8_kind             !< Latent heat of evaporation [J/kg]
 real,         public, parameter :: HLF = 3.34e5_r8_kind              !< Latent heat of fusion [J/kg]
 real,         public, parameter :: KAPPA  = 2.0_r8_kind/7.0_r8_kind  !< RDGAS / CP_AIR [dimensionless]
 real,         public, parameter :: CP_AIR = RDGAS/KAPPA              !< Specific heat capacity of dry air at constant pressure [J/kg/deg]
@@ -132,7 +132,7 @@ real, public, parameter :: VONKARM     = 0.40_r8_kind       !< Von Karman consta
 real, public, parameter :: C2DBARS     = 1.e-4_r8_kind      !< Converts rho*g*z (in mks) to dbars: 1dbar = 10^4 (kg/m^3)(m/s^2)m [dbars]
 real, public, parameter :: KELVIN      = 273.15_r8_kind     !< Degrees Kelvin at zero Celsius [K]
 
-public :: constants_init
+public :: constants_init, read_fms_constants
 
 contains
 
@@ -140,6 +140,56 @@ contains
 subroutine constants_init
 
 end subroutine constants_init
+
+! <SUBROUTINE NAME="read_fms_constants">
+!   <OVERVIEW>
+!     Read runtime configurable constants from the fms_constants_nml namelist.
+!   </OVERVIEW>
+!   <TEMPLATE>
+!     call read_fms_constants ()
+!   </TEMPLATE>
+!   <DESCRIPTION>
+!     Some constants can be configured in the fms_constants_nml namelist. Read the namelist
+!     and overwrite the default values.
+!   </DESCRIPTION>
+!   <INOUT NAME="output_field" TYPE="TYPE(output_field_type)">Output field that needs the cell_measures</INOUT>
+!   <IN NAME="area" TYPE="INTEGER, OPTIONAL">Field ID for area</IN>
+!   <IN NAME="volume" TYPE="INTEGER, OPTIONAL">Field ID for volume</IN>
+!   <OUT NAME="err_msg" TYPE="CHARACTER(len=*), OPTIONAL"> </OUT>
+subroutine read_fms_constants
+
+  USE fms_mod, ONLY: check_nml_error, stdlog
+  USE mpp_mod, ONLY: mpp_pe, mpp_root_pe
+#ifdef INTERNAL_FILE_NML
+  USE mpp_mod, ONLY: input_nml_file
+#else
+  USE fms_mod, ONLY: open_namelist_file, close_file
+  INTEGER :: nml_unit
+#endif
+  integer :: mystat, ierr, stdlog_unit
+
+  NAMELIST /fms_constants_nml/ hlv
+
+#ifdef INTERNAL_FILE_NML
+  READ (input_nml_file, NML=fms_constants_nml, IOSTAT=mystat)
+#else
+  if ( file_exist('input.nml') ) then
+    nml_unit = open_namelist_file ( )
+    ierr=1
+    do while (ierr > 0)
+      read  (nml_unit, nml=fms_constants_nml, iostat=mystat)
+      ierr = check_nml_error(mystat,'fms_constants_nml')
+    enddo
+      call close_file (nml_unit)
+  endif
+#endif
+
+  stdlog_unit = stdlog()
+  IF ( mpp_pe() == mpp_root_pe() ) THEN
+    WRITE (stdlog_unit, fms_constants_nml)
+  END IF
+
+end subroutine read_fms_constants
 
 end module constants_mod
 

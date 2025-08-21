@@ -166,6 +166,7 @@ use fms_io_mod, only : fms_io_init, fms_io_exit, field_size, &
 
 use memutils_mod, only: print_memuse_stats, memutils_init
 use constants_mod, only: constants_version=>version !pjp: PI not computed
+use constants_mod, only: read_fms_constants
 
 
 implicit none
@@ -446,6 +447,8 @@ subroutine fms_init (localcomm )
     call print_memuse_stats('fms_init')
 
     call write_version_number("CONSTANTS_MOD", constants_version)
+
+    call read_fms_constants()
 
 end subroutine fms_init
 ! </SUBROUTINE>
