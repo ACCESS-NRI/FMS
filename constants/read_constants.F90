@@ -60,4 +60,6 @@ module read_constants_mod
     ! Set HLS using the updated value of HLV
     HLS = HLV + HLF 
 
-end subroutine read_fms_constants
+  end subroutine read_fms_constants
+
+end module read_constants_mod
