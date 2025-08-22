@@ -96,7 +96,7 @@ real, public, parameter :: RHO_CP  = RHO0*CP_OCEAN    !< (kg/m^3)*(cal/kg/deg C)
 real, public, parameter :: ES0 = 1.0_r8_kind        !< Humidity factor. Controls the humidity content of the atmosphere through
                                                     !! the Saturation Vapour Pressure expression when using DO_SIMPLE. [dimensionless]
 real, public, parameter :: DENS_H2O = 1000._r8_kind !< Density of liquid water [kg/m^3]
-real, public, parameter :: HLS = HLV + HLF          !< Latent heat of sublimation [J/kg]
+real, public            :: HLS                      !< Latent heat of sublimation [J/kg]
 
 real, public, parameter :: WTMAIR   = 2.896440E+01_r8_kind   !< Molecular weight of air [AMU]
 real, public, parameter :: WTMH2O   = WTMAIR*(RDGAS/RVGAS)   !< Molecular weight of water [AMU]

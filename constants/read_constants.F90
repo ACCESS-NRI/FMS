@@ -2,7 +2,7 @@
 
 
 module read_constants_mod
-  use constants_mod, only: HLV
+  use constants_mod, only: HLV, HLS, HLF
   implicit none
   private
 
@@ -56,5 +56,8 @@ module read_constants_mod
     IF ( mpp_pe() == mpp_root_pe() ) THEN
       WRITE (stdlog_unit, fms_constants_nml)
     END IF
+
+    ! Set HLS using the updated value of HLV
+    HLS = HLV + HLF 
 
 end subroutine read_fms_constants
