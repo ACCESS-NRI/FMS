@@ -81,7 +81,7 @@ elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
 
   # Copied from MOM5/bin/mkmf.template.nci
   set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-alias -safe-cray-ptr -fpe0 -ftz -assume byterecl -i4 -r8 -traceback -nowarn -check noarg_temp_created -assume nobuffered_io -convert big_endian -grecord-gcc-switches -fp-model precise -fp-model source -align all")
-  set(CMAKE_Fortran_FLAGS_RELEASE "-g3 -O2 -xCORE-AVX2 -debug all -check none")
+  set(CMAKE_Fortran_FLAGS_RELEASE "-g3 -O2 -mavx2 -debug all -check none")
   set(CMAKE_Fortran_FLAGS_DEBUG "-g3 -O0 -debug all -check -check noarg_temp_created -check nopointer -warn -warn noerrors -ftrapuv")
 
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
@@ -92,7 +92,7 @@ elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
 
   # Copied from MOM5/bin/mkmf.template.nci
   set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-alias -safe-cray-ptr -fpe0 -ftz -assume byterecl -i4 -r8 -traceback -nowarn -check noarg_temp_created -assume nobuffered_io -convert big_endian -grecord-gcc-switches -fp-model precise -fp-model source -align all")
-  set(CMAKE_Fortran_FLAGS_RELEASE "-g3 -O2 -xCORE-AVX2 -debug all -check none")
+  set(CMAKE_Fortran_FLAGS_RELEASE "-g3 -O2 -mavx2 -debug all -check none")
   set(CMAKE_Fortran_FLAGS_DEBUG "-g3 -O0 -debug all -check -check noarg_temp_created -check nopointer -warn -warn noerrors -ftrapuv")
 
 else()
@@ -115,14 +115,14 @@ elseif(CMAKE_C_COMPILER_ID STREQUAL "Intel")
   # Copied from MOM5/bin/mkmf.template.nci
   set(CMAKE_C_FLAGS         "${CMAKE_C_FLAGS} -fp-model precise -fp-model source")
   set(CMAKE_C_FLAGS_DEBUG   "-O0 -g -ftrapuv -traceback")
-  set(CMAKE_C_FLAGS_RELEASE "-O2 -debug minimal -xCORE-AVX2")
+  set(CMAKE_C_FLAGS_RELEASE "-O2 -debug minimal -mavx2")
 
 elseif(CMAKE_C_COMPILER_ID STREQUAL "IntelLLVM")
 
   # Copied from MOM5/bin/mkmf.template.nci
   set(CMAKE_C_FLAGS         "${CMAKE_C_FLAGS} -fp-model precise")
   set(CMAKE_C_FLAGS_DEBUG   "-O0 -g -ftrapuv -traceback")
-  set(CMAKE_C_FLAGS_RELEASE "-O2 -debug minimal -xCORE-AVX2")
+  set(CMAKE_C_FLAGS_RELEASE "-O2 -debug minimal -mavx2")
 
 elseif(CMAKE_C_COMPILER_ID MATCHES "Clang")
 
