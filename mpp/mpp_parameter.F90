@@ -19,6 +19,7 @@
 module mpp_parameter_mod
 #include <fms_platform.h>
 
+  use platform_mod
   implicit none
   private
 
@@ -117,7 +118,8 @@ module mpp_parameter_mod
 ! combination with the flag parameter defined above to create a unique identifier for
 ! each Domain+flags combination. Therefore, the value of any flag must not exceed DOMAIN_ID_BASE.
 ! integer(LONG_KIND), parameter :: DOMAIN_ID_BASE=INT( 2**(4*LONG_KIND),KIND=LONG_KIND )
-  integer(LONG_KIND), parameter :: DOMAIN_ID_BASE = int(Z'0000000100000000', kind=LONG_KIND)
+  ! Cannot use the LONG_KIND macro to set the type suffix. i8_kind=LONG_KIND in platform_mod
+  integer(i8_kind), parameter :: DOMAIN_ID_BASE = 4294967296_i8_kind !=(0x0000000100000000)
   integer, parameter :: NON_BITWISE_EXACT_SUM=0
   integer, parameter :: BITWISE_EXACT_SUM=1
   integer, parameter :: BITWISE_EFP_SUM=2
