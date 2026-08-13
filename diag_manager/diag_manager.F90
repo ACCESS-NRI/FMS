@@ -190,6 +190,14 @@ MODULE diag_manager_mod
   !      diag_manager_init routine is called with the optional time_init parameter.  Note: This was usually done by FRE after the
   !     model run.
   !   </DATA>
+  !   <DATA NAME="wildcard_filename_prefix" TYPE="CHARACTER(len=16)" DEFAULT="'_'">
+  !     String inserted immediately before the first substituted time field when using a wildcard (%)
+  !     file name.
+  !   </DATA>
+  !   <DATA NAME="wildcard_filename_separator" TYPE="CHARACTER(len=16)" DEFAULT="'_'">
+  !     String inserted between each subsequent substituted time field when using a wildcard (%)
+  !     file name.
+  !   </DATA>
   !   <DATA NAME="region_out_use_alt_value" TYPE="LOGICAL" DEFAULT=".TRUE.">
   !     Will determine which value to use when checking a regional output if the region is the full axis or a sub-axis.
   !     The values are defined as <TT>GLO_REG_VAL</TT> (-999) and <TT>GLO_REG_VAL_ALT</TT> (-1) in <TT>diag_data_mod</TT>.
@@ -229,7 +237,7 @@ MODULE diag_manager_mod
        & use_cmor, issue_oor_warnings, oor_warnings_fatal, oor_warning, pack_size,&
        & max_out_per_in_field, flush_nc_files, region_out_use_alt_value, max_field_attributes, output_field_type,&
        & max_file_attributes, max_axis_attributes, prepend_date, DIAG_FIELD_NOT_FOUND, diag_init_time, diag_data_init,&
-       & write_manifest_file
+       & write_manifest_file, wildcard_filename_prefix, wildcard_filename_separator
   USE diag_table_mod, ONLY: parse_diag_table
   USE diag_output_mod, ONLY: get_diag_global_att, set_diag_global_att
   USE diag_grid_mod, ONLY: diag_grid_init, diag_grid_end
@@ -3779,7 +3787,8 @@ CONTAINS
          & max_input_fields, max_axes, do_diag_field_log, write_bytes_in_file, debug_diag_manager,&
          & max_num_axis_sets, max_files, use_cmor, issue_oor_warnings,&
          & oor_warnings_fatal, max_out_per_in_field, flush_nc_files, region_out_use_alt_value, max_field_attributes,&
-         & max_file_attributes, max_axis_attributes, prepend_date, write_manifest_file
+         & max_file_attributes, max_axis_attributes, prepend_date, write_manifest_file,&
+         & wildcard_filename_prefix, wildcard_filename_separator
 
     ! If the module was already initialized do nothing
     IF ( module_is_initialized ) RETURN
