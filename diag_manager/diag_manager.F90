@@ -3872,6 +3872,17 @@ CONTAINS
        max_files = mpp_get_maxunits()
     END IF
 
+    ! wildcard_filename_prefix/separator are inserted directly into output file names, so must not
+    ! contain a directory separator
+    IF ( INDEX(TRIM(wildcard_filename_prefix), '/') > 0 ) THEN
+       CALL error_mesg('diag_manager_mod::diag_manager_init', 'DIAG_MANAGER_NML variable '//&
+            & 'wildcard_filename_prefix ("'//TRIM(wildcard_filename_prefix)//'") cannot contain "/"', FATAL)
+    END IF
+    IF ( INDEX(TRIM(wildcard_filename_separator), '/') > 0 ) THEN
+       CALL error_mesg('diag_manager_mod::diag_manager_init', 'DIAG_MANAGER_NML variable '//&
+            & 'wildcard_filename_separator ("'//TRIM(wildcard_filename_separator)//'") cannot contain "/"', FATAL)
+    END IF
+
     ! How to handle Out of Range Warnings.
     IF ( oor_warnings_fatal ) THEN
        oor_warning = FATAL
