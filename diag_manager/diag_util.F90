@@ -52,7 +52,7 @@ MODULE diag_util_mod
        & mix_snapshot_average_fields, global_descriptor, CMOR_MISSING_VALUE, use_cmor, pack_size,&
        & debug_diag_manager, flush_nc_files, output_field_type, max_field_attributes, max_file_attributes,&
        & file_type, prepend_date, region_out_use_alt_value, GLO_REG_VAL, GLO_REG_VAL_ALT,&
-       & DIAG_FIELD_NOT_FOUND, diag_init_time
+       & DIAG_FIELD_NOT_FOUND, diag_init_time, wildcard_filename_prefix, wildcard_filename_separator
   USE diag_axis_mod, ONLY: get_diag_axis_data, get_axis_global_length, get_diag_axis_cart,&
        & get_domain1d, get_domain2d, diag_subaxes_init, diag_axis_init, get_diag_axis, get_axis_aux,&
        & get_axes_shift, get_diag_axis_name, get_diag_axis_domain_name, get_domainUG, &
@@ -2228,12 +2228,14 @@ CONTAINS
     INTEGER :: abs_sec, abs_day              ! component of current_time
     INTEGER :: days_per_month(12) = (/31,28,31,30,31,30,31,31,30,31,30,31/)
     INTEGER :: julian_day, i, position, len, first_percent
+    LOGICAL :: field_written  ! has a field already been appended to get_time_string
     CHARACTER(len=1) :: width  ! width of the field in format write
-    CHARACTER(len=10) :: format
+    CHARACTER(len=6) :: format
     CHARACTER(len=20) :: yr, mo, dy, hr, mi, sc        ! string of current time (output)
+    CHARACTER(len=20), DIMENSION(6) :: fields          ! yr, mo, dy, hr, mi, sc, in order
     CHARACTER(len=128) :: filetail
 
-    format = '("_",i*.*)'
+    format = '(i*.*)'
     CALL get_date(current_time, yr1, mo1, dy1, hr1, mi1, sc1)
     len = LEN_TRIM(filename)
     first_percent = INDEX(filename, '%')
@@ -2243,7 +2245,7 @@ CONTAINS
     IF ( position > 0 ) THEN
        width = filetail(position-1:position-1)
        yr1_s = yr1
-       format(7:9) = width//'.'//width
+       format(3:5) = width//'.'//width
        WRITE(yr, format) yr1_s
        yr2 = 0
     ELSE
@@ -2255,7 +2257,7 @@ CONTAINS
     IF ( position > 0 ) THEN
        width = filetail(position-1:position-1)
        mo1_s = yr2*12 + mo1
-       format(7:9) = width//'.'//width
+       format(3:5) = width//'.'//width
        WRITE(mo, format) mo1_s
     ELSE
        mo = ' '
@@ -2286,7 +2288,7 @@ CONTAINS
     position = INDEX(filetail, 'dy')
     IF ( position > 0 ) THEN
        width = filetail(position-1:position-1)
-       FORMAT(7:9) = width//'.'//width
+       FORMAT(3:5) = width//'.'//width
        WRITE(dy, FORMAT) dy1_s
     ELSE
        dy = ' '
@@ -2301,7 +2303,7 @@ CONTAINS
     position = INDEX(filetail, 'hr')
     IF ( position > 0 ) THEN
        width = filetail(position-1:position-1)
-       format(7:9) = width//'.'//width
+       format(3:5) = width//'.'//width
        WRITE(hr, format) hr1_s
     ELSE
        hr = ' '
@@ -2316,7 +2318,7 @@ CONTAINS
     position = INDEX(filetail, 'mi')
     IF(position>0) THEN
        width = filetail(position-1:position-1)
-       format(7:9) = width//'.'//width
+       format(3:5) = width//'.'//width
        WRITE(mi, format) mi1_s
     ELSE
        mi = ' '
@@ -2330,12 +2332,26 @@ CONTAINS
     position = INDEX(filetail, 'sc')
     IF ( position > 0 ) THEN
        width = filetail(position-1:position-1)
-       format(7:9) = width//'.'//width
+       format(3:5) = width//'.'//width
        WRITE(sc, format) sc1_s
     ELSE
        sc = ' '
     ENDIF
-    get_time_string = TRIM(yr)//TRIM(mo)//TRIM(dy)//TRIM(hr)//TRIM(mi)//TRIM(sc)
+    ! join the present fields, using wildcard_filename_prefix before the first one and
+    ! wildcard_filename_separator between each subsequent one (both default to "_")
+    fields(1) = yr; fields(2) = mo; fields(3) = dy
+    fields(4) = hr; fields(5) = mi; fields(6) = sc
+    get_time_string = ''
+    field_written = .FALSE.
+    DO i = 1, SIZE(fields)
+       IF ( LEN_TRIM(fields(i)) == 0 ) CYCLE
+       IF ( field_written ) THEN
+          get_time_string = TRIM(get_time_string)//TRIM(wildcard_filename_separator)//TRIM(fields(i))
+       ELSE
+          get_time_string = TRIM(get_time_string)//TRIM(wildcard_filename_prefix)//TRIM(fields(i))
+          field_written = .TRUE.
+       END IF
+    END DO
   END FUNCTION get_time_string
   ! </FUNCTION>
   ! </PRIVATE>

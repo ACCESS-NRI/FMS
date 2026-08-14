@@ -702,6 +702,14 @@ MODULE diag_data_mod
   !   only supported if the diag_manager_init routine is called with the optional time_init parameter.
   !   This was usually done by FRE after the model run.
   ! </DATA>
+  ! <DATA NAME="wildcard_filename_prefix" TYPE="CHARACTER(len=16)" DEFAULT="'_'">
+  !   String inserted immediately before the first substituted time field when using a wildcard (%)
+  !   file name.
+  ! </DATA>
+  ! <DATA NAME="wildcard_filename_separator" TYPE="CHARACTER(len=16)" DEFAULT="'_'">
+  !   String inserted between each subsequent substituted time field when using a wildcard (%)
+  !   file name.
+  ! </DATA>
   ! <DATA NAME="region_out_use_alt_value" TYPE="LOGICAL" DEFAULT=".TRUE.">
   !   Will determine which value to use when checking a regional output if the region is the full axis or a sub-axis.
   !   The values are defined as <TT>GLO_REG_VAL</TT> (-999) and <TT>GLO_REG_VAL_ALT</TT> (-1) in <TT>diag_data_mod</TT>.
@@ -732,6 +740,10 @@ MODULE diag_data_mod
   INTEGER :: max_file_attributes = 2 !< Maximum number of user definable global attributes per file.
   INTEGER :: max_axis_attributes = 4 !< Maximum number of user definable attributes per axis.
   LOGICAL :: prepend_date = .TRUE. !< Should the history file have the start date prepended to the file name
+  CHARACTER(len=16) :: wildcard_filename_prefix = '_' !< String inserted immediately before the first
+                                                      !! substituted time field when using a wildcard (%)
+  CHARACTER(len=16) :: wildcard_filename_separator = '_' !< String inserted between each subsequent
+                                                         !! substituted time field when using a wildcard (%)
   LOGICAL :: write_manifest_file = .FALSE. !< Indicates if the manifest file should be written.  If writing many
                                            !! regional files, then the termination time may increase causing job to time out.
 
