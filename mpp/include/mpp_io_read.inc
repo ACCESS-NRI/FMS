@@ -1048,8 +1048,8 @@
                     case('packing')
                        mpp_file(unit)%Var(nv)%pack=mpp_file(unit)%Var(nv)%Att(j)%fatt(1)
                     case('valid_range')
-                       mpp_file(unit)%Var(nv)%min=mpp_file(unit)%Var(nv)%Att(j)%fatt(1)
-                       mpp_file(unit)%Var(nv)%max=mpp_file(unit)%Var(nv)%Att(j)%fatt(2)
+                       mpp_file(unit)%Var(nv)%valid_min=mpp_file(unit)%Var(nv)%Att(j)%fatt(1)
+                       mpp_file(unit)%Var(nv)%valid_max=mpp_file(unit)%Var(nv)%Att(j)%fatt(2)
                     case('checksum')
                          checksum_char = mpp_file(unit)%Var(nv)%Att(j)%catt
 !                        Scan  checksum attribute for , delimiter. If found implies multiple time levels.

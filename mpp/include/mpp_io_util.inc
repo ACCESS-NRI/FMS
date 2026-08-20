@@ -92,13 +92,13 @@
    end subroutine mpp_get_global_atts
 
   !#####################################################################
-   subroutine mpp_get_field_atts(field, name, units, longname, min, max, missing, ndim, siz, axes, atts, &
+   subroutine mpp_get_field_atts(field, name, units, longname, valid_min, valid_max, missing, ndim, siz, axes, atts, &
                                  valid, scale, add, checksum)
 
      type(fieldtype),    intent(in)                            :: field
      character(len=*),   intent(out),                 optional :: name, units
      character(len=*),   intent(out),                 optional :: longname
-     real,               intent(out),                 optional :: min,max,missing
+     real,               intent(out),                 optional :: valid_min,valid_max,missing
      integer,            intent(out),                 optional :: ndim
      integer,            intent(out),   dimension(:), optional :: siz
      type(validtype),    intent(out),                 optional :: valid
@@ -114,8 +114,8 @@
      if (PRESENT(name)) name = field%name
      if (PRESENT(units)) units = field%units
      if (PRESENT(longname)) longname = field%longname
-     if (PRESENT(min)) min = field%min
-     if (PRESENT(max)) max = field%max
+     if (PRESENT(valid_min)) valid_min = field%valid_min
+     if (PRESENT(valid_max)) valid_max = field%valid_max
      if (PRESENT(missing)) missing = field%missing
      if (PRESENT(ndim)) ndim = field%ndim
      if (PRESENT(atts)) then
@@ -615,7 +615,7 @@
      integer :: valid_T, scale_T ! types of attributes
 
      v%is_range = .true.
-     v%min = -HUGE(v%min); v%max = HUGE(v%max)
+     v%valid_min = -HUGE(v%valid_min); v%valid_max = HUGE(v%valid_max)
      if (f%natt == 0) return
      ! find indices of relevant attributes
      irange   = mpp_find_att(f%att,'valid_range')
@@ -637,55 +637,55 @@
      ! examine possible range attributes
      valid_T = 0
      if (irange>0) then
-        v%min = f%att(irange)%fatt(1)
-        v%max = f%att(irange)%fatt(2)
+        v%valid_min = f%att(irange)%fatt(1)
+        v%valid_max = f%att(irange)%fatt(2)
         valid_T = f%att(irange)%type
      else if (imax>0.or.imin>0) then
         if(imax>0) then
-           v%max = f%att(imax)%fatt(1)
+           v%valid_max = f%att(imax)%fatt(1)
            valid_T = max(valid_T,f%att(imax)%type)
         endif
         if(imin>0) then
-           v%min = f%att(imin)%fatt(1)
+           v%valid_min = f%att(imin)%fatt(1)
            valid_T = max(valid_T,f%att(imin)%type)
         endif
      else if (imissing > 0) then
         v%is_range = .false.
         ! here we always scale, since missing_value is supposed to be in
         ! external representation
-        v%min = f%att(imissing)%fatt(1)*f%scale + f%add
+        v%valid_min = f%att(imissing)%fatt(1)*f%scale + f%add
      else if (ifill>0) then
      !z1l ifdef is added in to be able to compile without using use_netCDF.
 #ifdef use_netCDF
         ! define min and max according to _FillValue
         if(f%att(ifill)%fatt(1)>0) then
             ! if _FillValue is positive, then it defines valid maximum
-            v%max = f%att(ifill)%fatt(1)
+            v%valid_max = f%att(ifill)%fatt(1)
             select case(f%type)
             case (NF_BYTE,NF_SHORT,NF_INT)
-               v%max = v%max-1
+               v%valid_max = v%valid_max-1
             case (NF_FLOAT)
-               v%max = nearest(nearest(real(v%max,4),-1.0),-1.0)
+               v%valid_max = nearest(nearest(real(v%valid_max,4),-1.0),-1.0)
             case (NF_DOUBLE)
-               v%max = nearest(nearest(real(v%max,8),-1.0),-1.0)
+               v%valid_max = nearest(nearest(real(v%valid_max,8),-1.0),-1.0)
             end select
             ! always do the scaling, as the _FillValue is in external
             ! representation
-            v%max = v%max*f%scale + f%add
+            v%valid_max = v%valid_max*f%scale + f%add
         else
             ! if _FillValue is negative or zero, then it defines valid minimum
-            v%min = f%att(ifill)%fatt(1)
+            v%valid_min = f%att(ifill)%fatt(1)
             select case(f%type)
             case (NF_BYTE,NF_SHORT,NF_INT)
-               v%min = v%min+1
+               v%valid_min = v%valid_min+1
             case (NF_FLOAT)
-               v%min = nearest(nearest(real(v%min,4),+1.0),+1.0)
+               v%valid_min = nearest(nearest(real(v%valid_min,4),+1.0),+1.0)
             case (NF_DOUBLE)
-               v%min = nearest(nearest(real(v%min,8),+1.0),+1.0)
+               v%valid_min = nearest(nearest(real(v%valid_min,8),+1.0),+1.0)
             end select
             ! always do the scaling, as the _FillValue is in external
             ! representation
-            v%min = v%min*f%scale + f%add
+            v%valid_min = v%valid_min*f%scale + f%add
         endif
 #endif
     endif
@@ -697,10 +697,10 @@
     ! brances, because in this case all irange, imin, and imax are less then 0
     if(.not.((valid_T == scale_T).and.(scale_T>f%type))) then
        if(irange>0 .or. imin>0) then
-          v%min = v%min*f%scale + f%add
+          v%valid_min = v%valid_min*f%scale + f%add
        endif
        if(irange>0 .or. imax>0) then
-          v%max = v%max*f%scale + f%add
+          v%valid_max = v%valid_max*f%scale + f%add
        endif
     endif
 
@@ -712,9 +712,9 @@
       type(validtype), intent(in) :: v ! validator
 
       if (v%is_range) then
-         mpp_is_valid = (v%min<=x).and.(x<=v%max)
+         mpp_is_valid = (v%valid_min<=x).and.(x<=v%valid_max)
       else
-         mpp_is_valid = x/=v%min
+         mpp_is_valid = x/=v%valid_min
       endif
     end function mpp_is_valid
 

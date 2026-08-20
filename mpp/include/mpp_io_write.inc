@@ -46,7 +46,7 @@
 !     character(len=128) :: units                                            !
 !     character(len=256) :: longname                                         !
 !     character(len=256) :: standard_name  !CF standard name                 !
-!     real :: min, max, missing, fill, scale, add                            !
+!     real :: valid_min, valid_max, missing, fill, scale, add                !
 !     type(axistype), pointer :: axis(:)                                     !
 !     integer :: id                                                          !
 !  end type fieldtype                                                        !
@@ -114,12 +114,12 @@
 ! Only one time axis is allowed per file.                                    !
 !                                                                            !
 !  subroutine mpp_write_meta_field( unit, field, axes, name, units, longname !
-!       stanadard_name, min, max, missing, fill, scale, add, pack)           !
+!       stanadard_name, valid_min, valid_max, missing, fill, scale, add,     !
 !     integer, intent(in) :: unit                                            !
 !     type(fieldtype), intent(out) :: field                                  !
 !     type(axistype), intent(in) :: axes(:)                                  !
 !     character(len=*), intent(in) :: name, units, longname, standard_name   !
-!     real, intent(in), optional :: min, max, missing, fill, scale, add      !
+!     real, intent(in), optional :: valid_min, valid_max, missing, fill,     !
 !     integer, intent(in), optional :: pack                                  !
 !                                                                            !
 ! This form defines a field. Metadata corresponding to the type              !
@@ -352,7 +352,7 @@
 
 
 
-    subroutine mpp_write_meta_axis_r1d( unit, axis, name, units, longname, cartesian, sense, domain, data, min, calendar)
+    subroutine mpp_write_meta_axis_r1d( unit, axis, name, units, longname, cartesian, sense, domain, data, valid_min, calendar)
 !load the values in an axistype (still need to call mpp_write)
 !write metadata attributes for axis
 !it is declared intent(inout) so you can nullify pointers in the incoming object if needed
@@ -364,7 +364,7 @@
       integer,          intent(in), optional :: sense
       type(domain1D),   intent(in), optional :: domain
       real,             intent(in), optional :: data(:)
-      real,             intent(in), optional :: min
+      real,             intent(in), optional :: valid_min
       character(len=*), intent(in), optional :: calendar
 
       integer :: is, ie, isg, ieg
@@ -520,8 +520,8 @@
              ! silently ignore values of sense other than +/-1.
           end if
       end if
-      if( PRESENT(min) ) then
-        call mpp_write_meta( unit, axis%id, 'valid_min', rval=min)
+      if( PRESENT(valid_min) ) then
+        call mpp_write_meta( unit, axis%id, 'valid_min', rval=valid_min)
         axis%natt = axis%natt + 1
       endif
       if( mpp_file(unit)%threading.EQ.MPP_MULTI .AND. mpp_file(unit)%fileset.EQ.MPP_MULTI .AND. domain_exist )then
@@ -537,7 +537,7 @@
       return
     end subroutine mpp_write_meta_axis_r1d
 
-    subroutine mpp_write_meta_axis_i1d(unit, axis, name, units, longname, data, min, compressed)
+    subroutine mpp_write_meta_axis_i1d(unit, axis, name, units, longname, data, valid_min, compressed)
 !load the values in an axistype (still need to call mpp_write)
 !write metadata attributes for axis
 !it is declared intent(inout) so you can nullify pointers in the incoming object if needed
@@ -546,7 +546,7 @@
       type(axistype),   intent(inout)        :: axis
       character(len=*), intent(in)           :: name, units, longname
       integer,          intent(in)           :: data(:)
-      integer,          intent(in), optional :: min
+      integer,          intent(in), optional :: valid_min
       character(len=*), intent(in), optional :: compressed
 
       integer :: istat
@@ -595,8 +595,8 @@
         call mpp_write_meta( unit, axis%id, 'compress', cval=axis%compressed)
         axis%natt = axis%natt + 1
       endif
-      if( PRESENT(min) ) then
-        call mpp_write_meta( unit, axis%id, 'valid_min', ival=min)
+      if( PRESENT(valid_min) ) then
+        call mpp_write_meta( unit, axis%id, 'valid_min', ival=valid_min)
         axis%natt = axis%natt + 1
       endif
       if( verbose )print '(a,2i6,x,a,2i3)', 'MPP_WRITE_META: Wrote axis metadata, pe, unit, axis%name, axis%id, axis%did=', &
@@ -674,13 +674,13 @@
 
 
     subroutine mpp_write_meta_field( unit, field, axes, name, units, longname,&
-         min, max, missing, fill, scale, add, pack, time_method, standard_name, checksum)
+         valid_min, valid_max, missing, fill, scale, add, pack, time_method, standard_name, checksum)
 !define field: must have already called mpp_write_meta(axis) for each axis
       integer, intent(in) :: unit
       type(fieldtype), intent(inout) :: field
       type(axistype), intent(in) :: axes(:)
       character(len=*), intent(in) :: name, units, longname
-      real, intent(in), optional :: min, max, missing, fill, scale, add
+      real, intent(in), optional :: valid_min, valid_max, missing, fill, scale, add
       integer, intent(in), optional :: pack
       character(len=*), intent(in), optional :: time_method
       character(len=*), intent(in), optional :: standard_name
@@ -755,8 +755,8 @@
          end if
       end do
 !attributes
-      if( PRESENT(min) )          field%min           = min
-      if( PRESENT(max) )          field%max           = max
+      if( PRESENT(valid_min) )    field%valid_min     = valid_min
+      if( PRESENT(valid_max) )    field%valid_max     = valid_max
       if( PRESENT(scale) )        field%scale         = scale
       if( PRESENT(add) )          field%add           = add
       if( PRESENT(standard_name)) field%standard_name = standard_name
@@ -822,26 +822,26 @@
         call mpp_write_meta( unit, field%id, 'units',     cval=field%units)
       endif
 !all real attributes must be written as packed
-      if( PRESENT(min) .AND. PRESENT(max) )then
+      if( PRESENT(valid_min) .AND. PRESENT(valid_max) )then
           if( field%pack.EQ.1 .OR. field%pack.EQ.2 )then
-              call mpp_write_meta( unit, field%id, 'valid_range', rval=(/min,max/), pack=pack )
+              call mpp_write_meta( unit, field%id, 'valid_range', rval=(/valid_min,valid_max/), pack=pack )
           else
-              a = nint((min-add)/scale)
-              b = nint((max-add)/scale)
+              a = nint((valid_min-add)/scale)
+              b = nint((valid_max-add)/scale)
               call mpp_write_meta( unit, field%id, 'valid_range', rval=(/a,  b  /), pack=pack )
           end if
-      else if( PRESENT(min) )then
+      else if( PRESENT(valid_min) )then
           if( field%pack.EQ.1 .OR. field%pack.EQ.2 )then
-              call mpp_write_meta( unit, field%id, 'valid_min', rval=field%min, pack=pack )
+              call mpp_write_meta( unit, field%id, 'valid_min', rval=field%valid_min, pack=pack )
           else
-              a = nint((min-add)/scale)
+              a = nint((valid_min-add)/scale)
               call mpp_write_meta( unit, field%id, 'valid_min', rval=a, pack=pack )
           end if
-      else if( PRESENT(max) )then
+      else if( PRESENT(valid_max) )then
           if( field%pack.EQ.1 .OR. field%pack.EQ.2 )then
-              call mpp_write_meta( unit, field%id, 'valid_max', rval=field%max, pack=pack )
+              call mpp_write_meta( unit, field%id, 'valid_max', rval=field%valid_max, pack=pack )
           else
-              a = nint((max-add)/scale)
+              a = nint((valid_max-add)/scale)
               call mpp_write_meta( unit, field%id, 'valid_max', rval=a, pack=pack )
           end if
       end if
@@ -1467,26 +1467,26 @@
         call mpp_write_meta( unit, field%id, 'units',     cval=field%units    )
       endif
 !all real attributes must be written as packed
-      if( (field%min.NE.default_field%min) .AND. (field%max.NE.default_field%max) )then
+      if( (field%valid_min.NE.default_field%valid_min) .AND. (field%valid_max.NE.default_field%valid_max) )then
           if( field%pack.EQ.1 .OR. field%pack.EQ.2 )then
-              call mpp_write_meta( unit, field%id, 'valid_range', rval=(/field%min,field%max/), pack=field%pack )
+              call mpp_write_meta( unit, field%id, 'valid_range', rval=(/field%valid_min,field%valid_max/), pack=field%pack )
           else
-              a = nint((field%min-field%add)/field%scale)
-              b = nint((field%max-field%add)/field%scale)
+              a = nint((field%valid_min-field%add)/field%scale)
+              b = nint((field%valid_max-field%add)/field%scale)
               call mpp_write_meta( unit, field%id, 'valid_range', rval=(/a,  b  /), pack=field%pack )
           end if
-      else if( field%min.NE.default_field%min )then
+      else if( field%valid_min.NE.default_field%valid_min )then
           if( field%pack.EQ.1 .OR. field%pack.EQ.2 )then
-              call mpp_write_meta( unit, field%id, 'valid_min', rval=field%min, pack=field%pack )
+              call mpp_write_meta( unit, field%id, 'valid_min', rval=field%valid_min, pack=field%pack )
           else
-              a = nint((field%min-field%add)/field%scale)
+              a = nint((field%valid_min-field%add)/field%scale)
               call mpp_write_meta( unit, field%id, 'valid_min', rval=a, pack=field%pack )
           end if
-      else if( field%max.NE.default_field%max )then
+      else if( field%valid_max.NE.default_field%valid_max )then
           if( field%pack.EQ.1 .OR. field%pack.EQ.2 )then
-              call mpp_write_meta( unit, field%id, 'valid_max', rval=field%max, pack=field%pack )
+              call mpp_write_meta( unit, field%id, 'valid_max', rval=field%valid_max, pack=field%pack )
           else
-              a = nint((field%max-field%add)/field%scale)
+              a = nint((field%valid_max-field%add)/field%scale)
               call mpp_write_meta( unit, field%id, 'valid_max', rval=a, pack=field%pack )
           end if
       end if
@@ -1538,18 +1538,18 @@
       return
     end subroutine mpp_modify_axis_meta
 
-    subroutine mpp_modify_field_meta( field, name, units, longname, min, max, missing, axes )
+    subroutine mpp_modify_field_meta( field, name, units, longname, valid_min, valid_max, missing, axes )
 
       type(fieldtype), intent(inout) :: field
       character(len=*), intent(in), optional :: name, units, longname
-      real, intent(in), optional :: min, max, missing
+      real, intent(in), optional :: valid_min, valid_max, missing
       type(axistype), dimension(:), intent(inout), optional :: axes
 
       if (PRESENT(name)) field%name = trim(name)
       if (PRESENT(units)) field%units = trim(units)
       if (PRESENT(longname)) field%longname = trim(longname)
-      if (PRESENT(min)) field%min = min
-      if (PRESENT(max)) field%max = max
+      if (PRESENT(valid_min)) field%valid_min = valid_min
+      if (PRESENT(valid_max)) field%valid_max = valid_max
       if (PRESENT(missing)) field%missing = missing
 !      if (PRESENT(axes)) then
 !         axis%len = size(data(:))

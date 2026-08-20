@@ -350,7 +350,7 @@ subroutine fms_io_unstructured_save_restart(fileObj, &
                                 axis%longname, &
                                 data=axis%idx, &
                                 compressed=axis%compressed, &
-                                min=axis%imin)
+                                valid_min=axis%imin)
             axis => null()
             c_axis_defined = .true.
         else
@@ -373,7 +373,7 @@ subroutine fms_io_unstructured_save_restart(fileObj, &
                                 axis%longname, &
                                 data=axis%idx, &
                                 compressed=axis%compressed, &
-                                min=axis%imin)
+                                valid_min=axis%imin)
             axis => null()
             h_axis_defined = .true.
         else

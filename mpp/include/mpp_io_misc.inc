@@ -115,8 +115,8 @@
       default_field%ndim = -1
       default_field%checksum = 0
 !largest possible 4-byte reals
-      default_field%min = -huge(1._4)
-      default_field%max =  huge(1._4)
+      default_field%valid_min = -huge(1._4)
+      default_field%valid_max =  huge(1._4)
       default_field%missing = MPP_FILL_DOUBLE ! now using netcdf:NF_FILL_DOUBLE instead of -1e36
       default_field%fill = MPP_FILL_DOUBLE ! now using netcdf:NF_FILL_DOUBLE instead of -1e36
       default_field%scale = 1.0

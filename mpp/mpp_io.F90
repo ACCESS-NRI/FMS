@@ -165,7 +165,7 @@
 !      character(len=128) :: name
 !      character(len=128) :: units
 !      character(len=256) :: longname
-!      real :: min, max, missing, fill, scale, add
+!      real :: valid_min, valid_max, missing, fill, scale, add
 !      integer :: pack
 !      type(axistype), dimension(:), pointer :: axes
 !      integer, dimension(:), pointer :: size
@@ -443,7 +443,7 @@ type :: atttype
   type :: validtype
      private
      logical :: is_range ! if true, then the data represent the valid range
-     real    :: min,max  ! boundaries of the valid range or missing value
+     real    :: valid_min,valid_max  ! boundaries of the valid range or missing value
   end type validtype
 
   type :: fieldtype
@@ -452,7 +452,7 @@ type :: atttype
      character(len=128)      :: units
      character(len=256)      :: longname
      character(len=256)      :: standard_name   ! CF standard name
-     real                    :: min, max, missing, fill, scale, add
+     real                    :: valid_min, valid_max, missing, fill, scale, add
      integer                 :: pack
      integer(LONG_KIND), dimension(3) :: checksum
      type(axistype), pointer :: axes(:) =>NULL() !axes associated with field size, time_axis_index redundantly
@@ -729,7 +729,7 @@ type :: atttype
 !  </NOTE>
 !  <TEMPLATE>
 !    call mpp_write_meta( unit, field, axes, name, units, longname,
-!                              min, max, missing, fill, scale, add, pack )
+!                              valid_min, valid_max, missing, fill, scale, add, pack )
 !  </TEMPLATE>
 !  <NOTE>
 !    The second form defines a field. Metadata corresponding to the type
@@ -780,7 +780,7 @@ type :: atttype
 !  <IN NAME="domain"></IN>
 !  <IN NAME="data"></IN>
 !  <OUT NAME="field"></OUT>
-!  <IN NAME="min, max"></IN>
+!  <IN NAME="valid_min, valid_max"></IN>
 !  <IN NAME="missing"></IN>
 !  <IN NAME="fill"></IN>
 !  <IN NAME="scale"></IN>
