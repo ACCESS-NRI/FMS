@@ -79,7 +79,7 @@ elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
   set(r8_flags "-real-size 64 -no-prec-div -no-prec-sqrt") # Fortran flags for 64BIT precision
 
   # Copied from MOM5/bin/mkmf.template.nci
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-alias -safe-cray-ptr -fpe0 -ftz -assume byterecl -integer-size 32 -nowarn -check noarg_temp_created -assume nobuffered_io -convert big_endian -fp-model precise -fp-model source -align all")
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-alias -safe-cray-ptr -fpe0 -ftz -assume byterecl -integer-size 32 -nowarn -assume nobuffered_io -convert big_endian -fp-model precise -fp-model source -align all")
   set(CMAKE_Fortran_FLAGS_RELEASE "-O2 -xCORE-AVX2 -debug all -check none")
   set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO "${CMAKE_Fortran_FLAGS_RELEASE} -g3 -grecord-gcc-switches -traceback")
   set(CMAKE_Fortran_FLAGS_DEBUG "-g3 -O0 -debug all -check -check noarg_temp_created -check nopointer -warn -warn noerrors -ftrapuv -traceback")
@@ -90,7 +90,7 @@ elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
   set(r8_flags "-real-size 64") # Fortran flags for 64BIT precision
 
   # Copied from MOM5/bin/mkmf.template.nci
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-alias -safe-cray-ptr -fpe0 -ftz -assume byterecl -integer-size 32 -nowarn -check noarg_temp_created -assume nobuffered_io -convert big_endian -fp-model precise -fp-model source -align all")
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-alias -safe-cray-ptr -fpe0 -ftz -assume byterecl -integer-size 32 -nowarn -assume nobuffered_io -convert big_endian -fp-model precise -fp-model source -align all")
   set(CMAKE_Fortran_FLAGS_RELEASE "-O2 -xCORE-AVX2 -debug all -check none")
   set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO "${CMAKE_Fortran_FLAGS_RELEASE} -g3 -grecord-gcc-switches -traceback")
   set(CMAKE_Fortran_FLAGS_DEBUG "-g3 -O0 -debug all -check -check noarg_temp_created -check nopointer -warn -warn noerrors -ftrapuv -traceback")
