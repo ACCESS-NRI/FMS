@@ -59,8 +59,11 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
 
+  # Precision-based Fortran compiler flags
+  set(r8_flags "-fdefault-real-8 -fdefault-double-8") # Fortran flags for 64BIT precision
+
   # Copied from MOM5/bin/mkmf.template.nci.gfortran
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fcray-pointer -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -fno-range-check -Waliasing -Wampersand -Warray-bounds -Wcharacter-truncation -Wconversion -Wline-truncation -Wintrinsics-std -Wsurprising -Wno-tabs -Wunderflow -Wunused-parameter -Wintrinsic-shadow -Wno-align-commons")
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fcray-pointer -ffree-line-length-none -fno-range-check -Waliasing -Wampersand -Warray-bounds -Wcharacter-truncation -Wconversion -Wline-truncation -Wintrinsics-std -Wsurprising -Wno-tabs -Wunderflow -Wunused-parameter -Wintrinsic-shadow -Wno-align-commons")
   # Note, -fallow-argument-mismatch is handled further down
   check_fortran_compiler_flag("-fallow-invalid-boz" _boz_flag)
   if(_boz_flag)
@@ -72,6 +75,9 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
 
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
 
+  # Precision-based Fortran compiler flags
+  set(r8_flags "-real-size 64 -no-prec-div -no-prec-sqrt") # Fortran flags for 64BIT precision
+
   # Copied from MOM5/bin/mkmf.template.nci
   set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-alias -safe-cray-ptr -fpe0 -ftz -assume byterecl -i4 -r8 -nowarn -check noarg_temp_created -assume nobuffered_io -convert big_endian -fp-model precise -fp-model source -align all")
   set(CMAKE_Fortran_FLAGS_RELEASE "-O2 -xCORE-AVX2 -debug all -check none")
@@ -79,6 +85,9 @@ elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
   set(CMAKE_Fortran_FLAGS_DEBUG "-g3 -O0 -debug all -check -check noarg_temp_created -check nopointer -warn -warn noerrors -ftrapuv -traceback")
 
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
+
+  # Precision-based Fortran compiler flags
+  set(r8_flags "-real-size 64") # Fortran flags for 64BIT precision
 
   # Copied from MOM5/bin/mkmf.template.nci
   set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-alias -safe-cray-ptr -fpe0 -ftz -assume byterecl -i4 -r8 -nowarn -check noarg_temp_created -assume nobuffered_io -convert big_endian -fp-model precise -fp-model source -align all")
@@ -134,7 +143,7 @@ endif()
 
 # Build options
 option(OPENMP      "Build FMS with OpenMP support"        OFF)
-# Only 64BIT (r8) builds are supported: CMAKE_Fortran_FLAGS above unconditionally contains -r8 / -fdefault-real-8
+# Only 64BIT (r8) builds are supported: only r8_flags (used below) is defined for the Fortran precision flags
 # option(32BIT       "Build 32-bit (r4) FMS library"        OFF)
 option(64BIT       "Build 64-bit (r8) FMS library"        ON)
 option(FPIC        "Build with position independent code" OFF)
@@ -346,6 +355,8 @@ foreach(kind ${kinds})
 
   target_compile_definitions(${libTgt}_f PRIVATE "${fms_defs}")
   target_compile_definitions(${libTgt}_f PRIVATE "${${kind}_defs}")
+
+  set_target_properties(${libTgt}_f PROPERTIES COMPILE_FLAGS "${${kind}_flags}")
 
   set_target_properties(${libTgt}_f PROPERTIES Fortran_MODULE_DIRECTORY
                                                ${moduleDir})
