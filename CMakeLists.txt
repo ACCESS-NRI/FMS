@@ -33,9 +33,9 @@ include(GNUInstallDirs)
 include(CheckFortranCompilerFlag)
 
 if(NOT CMAKE_BUILD_TYPE MATCHES "^(Debug|Release|RelWithDebInfo|MinSizeRel)$")
-  message(STATUS "Setting build type to 'Release' as none was specified.")
+  message(STATUS "Setting build type to 'RelWithDebInfo' as none was specified.")
   set(CMAKE_BUILD_TYPE
-      "Release"
+      "RelWithDebInfo"
       CACHE STRING "Choose the type of build." FORCE)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
@@ -59,41 +59,32 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
 
-  # Precision-based Fortran compiler flags
-  set(r8_flags "-fdefault-real-8 -fdefault-double-8") # Fortran flags for 64BIT precision
-
   # Copied from MOM5/bin/mkmf.template.nci.gfortran
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fcray-pointer -fdefault-real-8 -ffree-line-length-none -fno-range-check -Waliasing -Wampersand -Warray-bounds -Wcharacter-truncation -Wconversion -Wline-truncation -Wintrinsics-std -Wsurprising -Wno-tabs -Wunderflow -Wunused-parameter -Wintrinsic-shadow -Wno-align-commons")
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fcray-pointer -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -fno-range-check -Waliasing -Wampersand -Warray-bounds -Wcharacter-truncation -Wconversion -Wline-truncation -Wintrinsics-std -Wsurprising -Wno-tabs -Wunderflow -Wunused-parameter -Wintrinsic-shadow -Wno-align-commons")
   # Note, -fallow-argument-mismatch is handled further down
   check_fortran_compiler_flag("-fallow-invalid-boz" _boz_flag)
   if(_boz_flag)
     set(CMAKE_Fortran_FLAGS               "${CMAKE_Fortran_FLAGS} -fallow-invalid-boz" )
   endif()
   set(CMAKE_Fortran_FLAGS_RELEASE "-O2")
+  set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO "${CMAKE_Fortran_FLAGS_RELEASE} -g -frecord-gcc-switches -fbacktrace")
   set(CMAKE_Fortran_FLAGS_DEBUG "-O0 -g -W -fbounds-check")
 
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
 
-  # Precision-based Fortran compiler flags
-  set(r4_flags "-real-size 32") # Fortran flags for 32BIT precision
-  set(r8_flags "-real-size 64") # Fortran flags for 64BIT precision
-  set(r8_flags "${r8_flags} -no-prec-div -no-prec-sqrt")
-
   # Copied from MOM5/bin/mkmf.template.nci
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-alias -safe-cray-ptr -fpe0 -ftz -assume byterecl -i4 -r8 -traceback -nowarn -check noarg_temp_created -assume nobuffered_io -convert big_endian -grecord-gcc-switches -fp-model precise -fp-model source -align all")
-  set(CMAKE_Fortran_FLAGS_RELEASE "-g3 -O2 -xCORE-AVX2 -debug all -check none")
-  set(CMAKE_Fortran_FLAGS_DEBUG "-g3 -O0 -debug all -check -check noarg_temp_created -check nopointer -warn -warn noerrors -ftrapuv")
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-alias -safe-cray-ptr -fpe0 -ftz -assume byterecl -i4 -r8 -nowarn -check noarg_temp_created -assume nobuffered_io -convert big_endian -fp-model precise -fp-model source -align all")
+  set(CMAKE_Fortran_FLAGS_RELEASE "-O2 -xCORE-AVX2 -debug all -check none")
+  set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO "${CMAKE_Fortran_FLAGS_RELEASE} -g3 -grecord-gcc-switches -traceback")
+  set(CMAKE_Fortran_FLAGS_DEBUG "-g3 -O0 -debug all -check -check noarg_temp_created -check nopointer -warn -warn noerrors -ftrapuv -traceback")
 
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
 
-  # Precision-based Fortran compiler flags
-  set(r4_flags "-real-size 32") # Fortran flags for 32BIT precision
-  set(r8_flags "-real-size 64") # Fortran flags for 64BIT precision
-
   # Copied from MOM5/bin/mkmf.template.nci
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-alias -safe-cray-ptr -fpe0 -ftz -assume byterecl -i4 -r8 -traceback -nowarn -check noarg_temp_created -assume nobuffered_io -convert big_endian -grecord-gcc-switches -fp-model precise -fp-model source -align all")
-  set(CMAKE_Fortran_FLAGS_RELEASE "-g3 -O2 -xCORE-AVX2 -debug all -check none")
-  set(CMAKE_Fortran_FLAGS_DEBUG "-g3 -O0 -debug all -check -check noarg_temp_created -check nopointer -warn -warn noerrors -ftrapuv")
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-alias -safe-cray-ptr -fpe0 -ftz -assume byterecl -i4 -r8 -nowarn -check noarg_temp_created -assume nobuffered_io -convert big_endian -fp-model precise -fp-model source -align all")
+  set(CMAKE_Fortran_FLAGS_RELEASE "-O2 -xCORE-AVX2 -debug all -check none")
+  set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO "${CMAKE_Fortran_FLAGS_RELEASE} -g3 -grecord-gcc-switches -traceback")
+  set(CMAKE_Fortran_FLAGS_DEBUG "-g3 -O0 -debug all -check -check noarg_temp_created -check nopointer -warn -warn noerrors -ftrapuv -traceback")
 
 else()
   message(WARNING "Fortran compiler with ID ${CMAKE_Fortran_COMPILER_ID} will be used with CMake default options")
@@ -106,30 +97,34 @@ endif()
 if(CMAKE_C_COMPILER_ID MATCHES "GNU")
 
   # Copied from MOM5/bin/mkmf.template.nci.gfortran
-  set(CMAKE_C_FLAGS         "${CMAKE_C_FLAGS}")
-  set(CMAKE_C_FLAGS_DEBUG   "-O0 -g")
-  set(CMAKE_C_FLAGS_RELEASE "-O2")
+  set(CMAKE_C_FLAGS               "${CMAKE_C_FLAGS}")
+  set(CMAKE_C_FLAGS_DEBUG         "-O0 -g")
+  set(CMAKE_C_FLAGS_RELEASE       "-O2")
+  set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELEASE} -g")
 
 elseif(CMAKE_C_COMPILER_ID STREQUAL "Intel")
 
   # Copied from MOM5/bin/mkmf.template.nci
-  set(CMAKE_C_FLAGS         "${CMAKE_C_FLAGS} -fp-model precise -fp-model source")
-  set(CMAKE_C_FLAGS_DEBUG   "-O0 -g -ftrapuv -traceback")
-  set(CMAKE_C_FLAGS_RELEASE "-O2 -debug minimal -xCORE-AVX2")
+  set(CMAKE_C_FLAGS               "${CMAKE_C_FLAGS} -fp-model precise -fp-model source")
+  set(CMAKE_C_FLAGS_DEBUG         "-O0 -g -ftrapuv -traceback")
+  set(CMAKE_C_FLAGS_RELEASE       "-O2 -debug minimal -xCORE-AVX2")
+  set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELEASE} -g")
 
 elseif(CMAKE_C_COMPILER_ID STREQUAL "IntelLLVM")
 
   # Copied from MOM5/bin/mkmf.template.nci
-  set(CMAKE_C_FLAGS         "${CMAKE_C_FLAGS} -fp-model precise")
-  set(CMAKE_C_FLAGS_DEBUG   "-O0 -g -ftrapuv -traceback")
-  set(CMAKE_C_FLAGS_RELEASE "-O2 -debug minimal -xCORE-AVX2")
+  set(CMAKE_C_FLAGS               "${CMAKE_C_FLAGS} -fp-model precise")
+  set(CMAKE_C_FLAGS_DEBUG         "-O0 -g -ftrapuv -traceback")
+  set(CMAKE_C_FLAGS_RELEASE       "-O2 -debug minimal -xCORE-AVX2")
+  set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELEASE} -g")
 
 elseif(CMAKE_C_COMPILER_ID MATCHES "Clang")
 
   # Copied from MOM5/bin/mkmf.template.nci.gfortran
-  set(CMAKE_C_FLAGS         "${CMAKE_C_FLAGS}")
-  set(CMAKE_C_FLAGS_DEBUG   "-O0 -g")
-  set(CMAKE_C_FLAGS_RELEASE "-O2")
+  set(CMAKE_C_FLAGS               "${CMAKE_C_FLAGS}")
+  set(CMAKE_C_FLAGS_DEBUG         "-O0 -g")
+  set(CMAKE_C_FLAGS_RELEASE       "-O2")
+  set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELEASE} -g")
 
 else()
   message(WARNING "C compiler with ID ${CMAKE_C_COMPILER_ID} will be used with CMake default options")
@@ -139,9 +134,8 @@ endif()
 
 # Build options
 option(OPENMP      "Build FMS with OpenMP support"        OFF)
-# Commented out while CMAKE_Fortran_FLAGS contains -r8
+# Only 64BIT (r8) builds are supported: CMAKE_Fortran_FLAGS above unconditionally contains -r8 / -fdefault-real-8
 # option(32BIT       "Build 32-bit (r4) FMS library"        OFF)
-# Refer to CMAKE_Fortran_FLAGS above, it contains -r8
 option(64BIT       "Build 64-bit (r8) FMS library"        ON)
 option(FPIC        "Build with position independent code" OFF)
 option(SHARED_LIBS "Build shared/dynamic libraries"       OFF)
@@ -352,8 +346,6 @@ foreach(kind ${kinds})
 
   target_compile_definitions(${libTgt}_f PRIVATE "${fms_defs}")
   target_compile_definitions(${libTgt}_f PRIVATE "${${kind}_defs}")
-
-  set_target_properties(${libTgt}_f PROPERTIES COMPILE_FLAGS "${${kind}_flags}")
 
   set_target_properties(${libTgt}_f PROPERTIES Fortran_MODULE_DIRECTORY
                                                ${moduleDir})
