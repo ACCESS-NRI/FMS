@@ -63,7 +63,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
   set(r8_flags "-fdefault-real-8 -fdefault-double-8") # Fortran flags for 64BIT precision
 
   # Copied from MOM5/bin/mkmf.template.nci.gfortran
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fcray-pointer -ffree-line-length-none -fno-range-check -Waliasing -Wampersand -Warray-bounds -Wcharacter-truncation -Wconversion -Wline-truncation -Wintrinsics-std -Wsurprising -Wno-tabs -Wunderflow -Wunused-parameter -Wintrinsic-shadow -Wno-align-commons")
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fcray-pointer -ffree-line-length-none -fno-range-check -fconvert=big-endian -Waliasing -Wampersand -Warray-bounds -Wcharacter-truncation -Wconversion -Wline-truncation -Wintrinsics-std -Wsurprising -Wno-tabs -Wunderflow -Wunused-parameter -Wintrinsic-shadow -Wno-align-commons")
   # Note, -fallow-argument-mismatch is handled further down
   check_fortran_compiler_flag("-fallow-invalid-boz" _boz_flag)
   if(_boz_flag)
@@ -106,33 +106,33 @@ endif()
 if(CMAKE_C_COMPILER_ID MATCHES "GNU")
 
   # Copied from MOM5/bin/mkmf.template.nci.gfortran
-  set(CMAKE_C_FLAGS               "${CMAKE_C_FLAGS}")
-  set(CMAKE_C_FLAGS_DEBUG         "-O0 -g")
-  set(CMAKE_C_FLAGS_RELEASE       "-O2")
+  set(CMAKE_C_FLAGS                "${CMAKE_C_FLAGS}")
+  set(CMAKE_C_FLAGS_DEBUG          "-O0 -g")
+  set(CMAKE_C_FLAGS_RELEASE        "-O2")
   set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELEASE} -g")
 
 elseif(CMAKE_C_COMPILER_ID STREQUAL "Intel")
 
   # Copied from MOM5/bin/mkmf.template.nci
-  set(CMAKE_C_FLAGS               "${CMAKE_C_FLAGS} -fp-model precise -fp-model source")
-  set(CMAKE_C_FLAGS_DEBUG         "-O0 -g -ftrapuv -traceback")
-  set(CMAKE_C_FLAGS_RELEASE       "-O2 -debug minimal -xCORE-AVX2")
+  set(CMAKE_C_FLAGS                "${CMAKE_C_FLAGS} -fp-model precise -fp-model source")
+  set(CMAKE_C_FLAGS_DEBUG          "-O0 -g -ftrapuv -traceback")
+  set(CMAKE_C_FLAGS_RELEASE        "-O2 -debug minimal -xCORE-AVX2")
   set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELEASE} -g")
 
 elseif(CMAKE_C_COMPILER_ID STREQUAL "IntelLLVM")
 
   # Copied from MOM5/bin/mkmf.template.nci
-  set(CMAKE_C_FLAGS               "${CMAKE_C_FLAGS} -fp-model precise")
-  set(CMAKE_C_FLAGS_DEBUG         "-O0 -g -ftrapuv -traceback")
-  set(CMAKE_C_FLAGS_RELEASE       "-O2 -debug minimal -xCORE-AVX2")
+  set(CMAKE_C_FLAGS                "${CMAKE_C_FLAGS} -fp-model precise")
+  set(CMAKE_C_FLAGS_DEBUG          "-O0 -g -ftrapuv -traceback")
+  set(CMAKE_C_FLAGS_RELEASE        "-O2 -debug minimal -xCORE-AVX2")
   set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELEASE} -g")
 
 elseif(CMAKE_C_COMPILER_ID MATCHES "Clang")
 
   # Copied from MOM5/bin/mkmf.template.nci.gfortran
-  set(CMAKE_C_FLAGS               "${CMAKE_C_FLAGS}")
-  set(CMAKE_C_FLAGS_DEBUG         "-O0 -g")
-  set(CMAKE_C_FLAGS_RELEASE       "-O2")
+  set(CMAKE_C_FLAGS                "${CMAKE_C_FLAGS}")
+  set(CMAKE_C_FLAGS_DEBUG          "-O0 -g")
+  set(CMAKE_C_FLAGS_RELEASE        "-O2")
   set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELEASE} -g")
 
 else()
@@ -148,6 +148,10 @@ option(OPENMP      "Build FMS with OpenMP support"        OFF)
 option(64BIT       "Build 64-bit (r8) FMS library"        ON)
 option(FPIC        "Build with position independent code" OFF)
 option(SHARED_LIBS "Build shared/dynamic libraries"       OFF)
+
+if(NOT 64BIT)
+  message(FATAL_ERROR "64BIT must be ON: only 64-bit (r8) builds are currently supported.")
+endif()
 
 # Options for compiler definitions
 option(INTERNAL_FILE_NML     "Enable compiler definition -DINTERNAL_FILE_NML"      ON)
