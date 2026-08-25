@@ -119,7 +119,8 @@
 !     type(fieldtype), intent(out) :: field                                  !
 !     type(axistype), intent(in) :: axes(:)                                  !
 !     character(len=*), intent(in) :: name, units, longname, standard_name   !
-!     real, intent(in), optional :: valid_min, valid_max, missing, fill,     !
+!     real, intent(in), optional :: valid_min, valid_max, missing, fill,     |
+!                                   scale, add                               !
 !     integer, intent(in), optional :: pack                                  !
 !                                                                            !
 ! This form defines a field. Metadata corresponding to the type              !
