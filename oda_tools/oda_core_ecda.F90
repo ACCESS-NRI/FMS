@@ -1739,7 +1739,7 @@ contains
     integer, intent(inout) :: nprof
 
     integer :: i, k, kk, k_interval
-    integer :: yr, mon, day, hr, min, sec
+    integer :: yr, mon, day, hr, minutes, sec
     integer :: stdout_unit
 
     type(time_type) :: tdiff
@@ -1748,7 +1748,7 @@ contains
     stdout_unit = stdout()
 
     write (UNIT=stdout_unit, FMT='("Gathering profiles for current analysis time")')
-    call get_date(model_time, yr, mon, day, hr, min, sec)
+    call get_date(model_time, yr, mon, day, hr, minutes, sec)
     write (UNIT=stdout_unit, FMT='("Current YYYY/MM/DD = ",I4,"/",I2,"/",I2)') yr, mon, day
 
     do i=1, no_prf

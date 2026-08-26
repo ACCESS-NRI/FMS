@@ -221,9 +221,9 @@ subroutine fms_io_unstructured_register_restart_axis_r1D(fileObj, &
 
    !Store the minimum value allowed for the axis.
     if (present(fmin)) then
-        fileObj%axes(axis_index)%min = fmin
+        fileObj%axes(axis_index)%valid_min = fmin
     else
-        fileObj%axes(axis_index)%min = 0
+        fileObj%axes(axis_index)%valid_min = 0
     endif
 
    !Store the calendar for the axis.  This is only done for the time dimension.

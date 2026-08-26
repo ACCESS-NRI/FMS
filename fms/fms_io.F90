@@ -196,7 +196,7 @@ type ax_type
    character(len=128) :: calendar = ''
    integer            :: sense              !Orientation of z axis definition
    integer            :: dimlen             !max dim of elements across global domain
-   real               :: min             !valid min for real axis data
+   real               :: valid_min           !valid min for real axis data
    integer            :: imin            !valid min for integer axis data
    integer,allocatable :: idx(:)         !compressed io-domain index vector
    integer,allocatable :: nelems(:)      !num elements for each rank in io domain
@@ -1237,14 +1237,14 @@ end subroutine write_data_3d_new
 !   This routine will register an integer restart file axis
 !
 !-------------------------------------------------------------------------------
-subroutine register_restart_axis_r1d(fileObj,filename,fieldname,data,cartesian,units,longname,sense,min,calendar)
+subroutine register_restart_axis_r1d(fileObj,filename,fieldname,data,cartesian,units,longname,sense,valid_min,calendar)
   type(restart_file_type),    intent(inout)      :: fileObj
   character(len=*),           intent(in)         :: filename, fieldname
   real,                       intent(in), target :: data(:)
   character(len=*),           intent(in)         :: cartesian
   character(len=*), optional, intent(in)         :: units, longname
   integer,          optional, intent(in)         :: sense
-  real,             optional, intent(in)         :: min !valid min for real axis data
+  real,             optional, intent(in)         :: valid_min !valid min for real axis data
   character(len=*), optional, intent(in)         :: calendar
 
   integer :: idx
@@ -1280,7 +1280,7 @@ subroutine register_restart_axis_r1d(fileObj,filename,fieldname,data,cartesian,u
   fileObj%axes(idx)%dimlen = -1   ! This is not a compressed axis
   if(PRESENT(units)) fileObj%axes(idx)%units = units
   if(PRESENT(longname)) fileObj%axes(idx)%longname = longname
-  if(PRESENT(min)) fileObj%axes(idx)%min = min
+  if(PRESENT(valid_min)) fileObj%axes(idx)%valid_min = valid_min
   if(idx == TIDX) then
      if(PRESENT(calendar)) fileObj%axes(idx)%calendar = trim(calendar)
   endif
@@ -2669,7 +2669,7 @@ subroutine save_compressed_restart(fileObj,restartpath,append,time_level)
     if(ALLOCATED(axis%idx)) then
        call mpp_def_dim(unit,trim(axis%dimlen_name),axis%dimlen,trim(axis%dimlen_lname), (/(i,i=1,axis%dimlen)/))
        call mpp_write_meta(unit,c_axis,axis%name,axis%units,axis%longname, &
-                           data=axis%idx,compressed=axis%compressed,min=axis%imin)
+                           data=axis%idx,compressed=axis%compressed,valid_min=axis%imin)
        c_axis_defined = .TRUE.
     else
        c_axis_defined = .FALSE.
@@ -2679,7 +2679,7 @@ subroutine save_compressed_restart(fileObj,restartpath,append,time_level)
     if (ALLOCATED(axis%idx)) then
        call mpp_def_dim(unit,trim(axis%dimlen_name),axis%dimlen,trim(axis%dimlen_lname), (/(i,i=1,axis%dimlen)/))
        call mpp_write_meta(unit,h_axis,axis%name,axis%units,axis%longname, &
-                         data=axis%idx,compressed=axis%compressed,min=axis%imin)
+                         data=axis%idx,compressed=axis%compressed,valid_min=axis%imin)
        h_axis_defined = .TRUE.
     else
        h_axis_defined = .FALSE.

@@ -716,7 +716,7 @@ module time_interp_external_mod
 
       integer :: nx, ny, nz, interp_method, t1, t2
       integer :: i1, i2, isc, iec, jsc, jec, mod_time
-      integer :: yy, mm, dd, hh, min, ss
+      integer :: yy, mm, dd, hh, minutes, ss
       character(len=256) :: err_msg, filename
 
       integer :: isw, iew, jsw, jew, nxw, nyw
@@ -821,9 +821,9 @@ module time_interp_external_mod
         endif
          w1 = 1.0-w2
          if (verb) then
-            call get_date(time,yy,mm,dd,hh,min,ss)
+            call get_date(time,yy,mm,dd,hh,minutes,ss)
             write(outunit,'(a,i4,a,i2,a,i2,1x,i2,a,i2,a,i2)') &
-                 'target time yyyy/mm/dd hh:mm:ss= ',yy,'/',mm,'/',dd,hh,':',min,':',ss
+                 'target time yyyy/mm/dd hh:mm:ss= ',yy,'/',mm,'/',dd,hh,':',minutes,':',ss
             write(outunit,*) 't1, t2, w1, w2= ', t1, t2, w1, w2
          endif
 
@@ -871,7 +871,7 @@ module time_interp_external_mod
 
       integer :: t1, t2
       integer :: i1, i2, mod_time
-      integer :: yy, mm, dd, hh, min, ss
+      integer :: yy, mm, dd, hh, minutes, ss
       character(len=256) :: err_msg, filename
 
       real :: w1,w2
@@ -913,9 +913,9 @@ module time_interp_external_mod
         endif
          w1 = 1.0-w2
          if (verb) then
-            call get_date(time,yy,mm,dd,hh,min,ss)
+            call get_date(time,yy,mm,dd,hh,minutes,ss)
             write(outunit,'(a,i4,a,i2,a,i2,1x,i2,a,i2,a,i2)') &
-                 'target time yyyy/mm/dd hh:mm:ss= ',yy,'/',mm,'/',dd,hh,':',min,':',ss
+                 'target time yyyy/mm/dd hh:mm:ss= ',yy,'/',mm,'/',dd,hh,':',minutes,':',ss
             write(outunit,*) 't1, t2, w1, w2= ', t1, t2, w1, w2
          endif
          call load_record_0d(field(index),t1)

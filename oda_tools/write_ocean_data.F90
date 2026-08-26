@@ -125,20 +125,20 @@ call mpp_write_meta(unit,nvar_field,(/station_axis/),&
 
 call mpp_write_meta(unit,lon_field,(/station_axis/),&
                    'longitude','degrees_E','longitude',&
-                    min=-1.0,max=361.0)
+                    valid_min=-1.0,valid_max=361.0)
 
 call mpp_write_meta(unit,lat_field,(/station_axis/),&
                    'latitude','degrees_N','latitude',&
-                    min=-91.0,max=91.0)
+                    valid_min=-91.0,valid_max=91.0)
 
 call mpp_write_meta(unit,profile_flag_field,(/station_axis/),&
                    'profile_flag','none','profile_flag',&
-                   min=0.0,max=10.0,missing=missing_value)
+                   valid_min=0.0,valid_max=10.0,missing=missing_value)
 
 
 if (nvar_out .eq. 2) call mpp_write_meta(unit,profile_flag_s_field,(/station_axis/),&
                    'profile_flag_s','none','profile_flag for salt',&
-                    min=0.0,max=10.0,missing=missing_value)
+                    valid_min=0.0,valid_max=10.0,missing=missing_value)
 
 
 write(time_units,'(a,i4.4,a,i2.2,a,i2.2,a)')  'days since ',ref_yr,'-',ref_mon,'-',ref_day,' 00:00:00'
@@ -187,16 +187,16 @@ call mpp_write_meta(unit,link_field,(/station_axis/),&
  units='degrees_C'
  call mpp_write_meta(unit,data_t_field,(/depth_axis,station_axis/),&
               'temp',trim(units),'in-situ temperature',&
-                min=-10.0,max=50.0,missing=missing_value)
+                valid_min=-10.0,valid_max=50.0,missing=missing_value)
 
  units='g/kg'
  if (nvar_out .eq. 2) call mpp_write_meta(unit,data_s_field,(/depth_axis,station_axis/),&
                    'salt',trim(units),'salinity',&
-                    min=0.0,max=50.0,missing=missing_value)
+                    valid_min=0.0,valid_max=50.0,missing=missing_value)
 
 call mpp_write_meta(unit,depth_field,(/depth_axis,station_axis/),&
                    'depth','meters','depth of obs',&
-                    min=0.0,max=7000.0,missing=missing_value)
+                    valid_min=0.0,valid_max=7000.0,missing=missing_value)
 
 
 

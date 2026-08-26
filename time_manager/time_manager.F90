@@ -3272,12 +3272,12 @@ function date_to_string(time, err_msg)
   character(len=*), intent(out), optional :: err_msg
   character(len=128)                      :: err_msg_local
   character(len=15)                       :: date_to_string
-  integer                                 :: yr,mon,day,hr,min,sec
+  integer                                 :: yr,mon,day,hr,minutes,sec
 
   if(present(err_msg)) err_msg = ''
-  call get_date(time,yr,mon,day,hr,min,sec)
+  call get_date(time,yr,mon,day,hr,minutes,sec)
   if (yr <= 9999) then
-     write(date_to_string,'(I4.4,I2.2,I2.2,".",I2.2,I2.2,I2.2)') yr, mon, day, hr, min, sec
+     write(date_to_string,'(I4.4,I2.2,I2.2,".",I2.2,I2.2,I2.2)') yr, mon, day, hr, minutes, sec
   else
      write(err_msg_local, '(a,i4.4,a)') 'year = ', yr, ' should be less than 10000'
      if(error_handler('function date_to_string', err_msg_local, err_msg)) return
@@ -3428,7 +3428,7 @@ end module time_manager_mod
 
  type(time_type) :: Time, time1, time2
  real    :: xx
- integer :: yr, mo, day, hr, min, sec, ticks
+ integer :: yr, mo, day, hr, minutes, sec, ticks
  integer :: year, month, dday, days_this_month
  integer :: days_per_month(12) = (/31,28,31,30,31,30,31,31,30,31,30,31/)
  logical :: leap
@@ -3687,8 +3687,8 @@ logical :: test17=.true.,test18=.true.,test19=.true.
          if(err_msg /= '') then
            write(outunit,'(a)') 'test of decrement_date fails '//trim(err_msg)
          else
-           call get_date(time2, yr, mo, day, hr, min, sec, ticks)
-           write(outunit,20) yr, mo, day, hr, min, sec, ticks
+           call get_date(time2, yr, mo, day, hr, minutes, sec, ticks)
+           write(outunit,20) yr, mo, day, hr, minutes, sec, ticks
          endif
        enddo
      enddo
@@ -3697,13 +3697,13 @@ logical :: test17=.true.,test18=.true.,test19=.true.
      do icode=0,242
        day   = modulo(icode/81,3) - 1
        hr    = modulo(icode/27,3) - 1
-       min   = modulo(icode/9, 3) - 1
+       minutes = modulo(icode/9, 3) - 1
        sec   = modulo(icode/3, 3) - 1
        ticks = modulo(icode   ,3) - 1
-       write(outunit,11) day, hr, min, sec, ticks
-       time2 = increment_date(time1, 0, 0, day, hr, min, sec, ticks, err_msg)
-       call get_date(time2, yr, mo, day, hr, min, sec, ticks)
-       write(outunit,20) yr, mo, day, hr, min, sec, ticks
+       write(outunit,11) day, hr, minutes, sec, ticks
+       time2 = increment_date(time1, 0, 0, day, hr, minutes, sec, ticks, err_msg)
+       call get_date(time2, yr, mo, day, hr, minutes, sec, ticks)
+       write(outunit,20) yr, mo, day, hr, minutes, sec, ticks
      enddo
    enddo
  endif
@@ -3783,7 +3783,7 @@ logical :: test17=.true.,test18=.true.,test19=.true.
     endif
     call set_calendar_type(GREGORIAN)
     Time = set_time(seconds=2, days=1, ticks=1)
-    call get_date(Time, yr, mo, day, hr, min, sec, err_msg=err_msg)
+    call get_date(Time, yr, mo, day, hr, minutes, sec, err_msg=err_msg)
     if(err_msg == '') then
       write(outunit,'(a)') 'test10.2 fails'
     else
@@ -3952,7 +3952,7 @@ logical :: test17=.true.,test18=.true.,test19=.true.
         if(leap .and. month == 2) days_this_month = 29
         do dday=1,days_this_month
           Time = set_date(year, month, dday, 0, 0, 0) 
-          call get_date(Time, yr, mo, day, hr, min, sec)
+          call get_date(Time, yr, mo, day, hr, minutes, sec)
           write(outunit,100) yr, mo, day, leap_year(Time), days_in_month(Time), days_in_year(Time)
         enddo
       enddo
