@@ -115,6 +115,7 @@
 !                                                                            !
 !  subroutine mpp_write_meta_field( unit, field, axes, name, units, longname !
 !       stanadard_name, valid_min, valid_max, missing, fill, scale, add,     !
+!       pack)                                                                !
 !     integer, intent(in) :: unit                                            !
 !     type(fieldtype), intent(out) :: field                                  !
 !     type(axistype), intent(in) :: axes(:)                                  !
