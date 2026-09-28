@@ -3,9 +3,13 @@ spack:
   - access-fms @git.{{ ref }} ~large_file
   - access-fms @git.{{ ref }} +large_file
   packages:
+    gcc:
+      require:
+      - '@{{ gcc_compiler_ver }}'
     all:
       require:
-      - '%{{ gcc_compiler }} target={{ target}}'
+      - '%access_gcc'
+      - 'target={{ target }}'
   concretizer:
     unify: false
   view: false

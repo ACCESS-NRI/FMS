@@ -3,9 +3,14 @@ spack:
   - access-fms @git.{{ ref }} ~large_file
   - access-fms @git.{{ ref }} +large_file
   packages:
+    intel-oneapi-compilers-classic:
+      require:
+      - '@{{ intel_compiler_ver }}'
     all:
       require:
-      - '%{{ intel_compiler }} target={{ target}}'
+      - '%access_intel'
+      prefer:
+      - 'target={{ target }}'
   concretizer:
     unify: false
   view: false
